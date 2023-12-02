@@ -45,3 +45,47 @@ The major tasks in implementing the game includes:
 * Finish the whole project
 * Prepare for the demonstration
 
+## Project Architecture
+
+* UI - implemented with bricks
+  * Tick: call `step` in game event
+* Game objects
+  * Player - move, shoot bullet, check health…
+    * Data: score, coordination, health, 
+    * Related functions: getScore, setScore, isAlive, move, etc.
+  * Enemy - move, shoot bullet
+    * Data: score, coordination, health, fire rate
+    * Related functions: getScore, setScore, isAlive, move, shootBullet etc.
+  * Bullet (from player/enemy)
+* Game event
+  * A global timer for controlling objects' speed
+  * On each `step`
+    * Increment timer
+    * Check if the player and enemy crash
+    * Check if the player is shot
+    * Generate new enemy
+    * Move enemy, shoot bullet
+    * Update UI
+  * Keyboard
+    * ‘W’, ‘A’, ‘S’, ‘D’ - move the player
+    * ‘P’ - pause
+    * ‘esc’ - exit
+* Network
+  * A server that stores players’ data.
+  * Client side communication functions.
+
+## Task Allocation
+
+* Zhangchi Lu: Property and behavior of Player, Enemy and Bullets
+* Yangkun Wang: Main UI
+* Bei Pei: Game events
+
+## Current Progress
+
+* We got familiar with relevant packages
+* We analyzed our goal and came up with detailed architecture design of the project
+* We started implement each components
+However, maintaining player and enemy states have been tricky, so we didn’t managed to fully implement the UI and gaming logic for a single player as expected. We might not be able to integrate networking and multi-player mode before the submission. 
+* Adjustment: if the progress is still not satisfying up to 6 Dec, we plan to give up the networking functions and try our best to make sure the current single player game can function well.
+
+
