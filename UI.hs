@@ -12,6 +12,7 @@ import Shaft
   , health
   , initState
   , mode
+  , paused
   , player
   , score
   )
@@ -45,6 +46,7 @@ import Brick
   , continue
   , customMain
   , emptyWidget
+  , fill
   , hBox
   , hLimit
   , halt
@@ -52,10 +54,12 @@ import Brick
   , padAll
   , padBottom
   , padLeft
+  , padLeftRight
   , padRight
   , padTop
   , str
   , vBox
+  , vLimit
   , withAttr
   , withBorderStyle
   )
@@ -79,7 +83,25 @@ app =
     }
 
 drawUI :: Game -> [Widget Name]
-drawUI g = [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
+drawUI g =
+  if g ^. paused
+    then [C.center (padRight (Pad 2) (drawStats g <+> drawPauseScreen))]
+    else [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
+
+drawPauseScreen :: Widget Name
+drawPauseScreen =
+  withBorderStyle BS.unicodeRounded $
+  hLimit (gridWidth + 2) $
+  vLimit (gridHeight + 2) $
+  C.hCenter $
+  C.vCenter $
+  B.borderWithLabel (str " Aircraft Shooting ") $
+  vBox
+    [ fill ' '
+    , vBox
+        [C.hCenter $ str "Game Paused", C.hCenter $ str "Press 'p' to resume"]
+    , fill ' '
+    ]
 
 -- TODO: scores and healths for player 1 & 2
 drawStats :: Game -> Widget Name
@@ -195,9 +217,6 @@ playerBulletCell = str "."
 
 enemyBulletCell :: Widget Name
 enemyBulletCell = str "."
-
-plus :: Widget Name
-plus = str "+"
 
 theMap :: AttrMap
 theMap =
