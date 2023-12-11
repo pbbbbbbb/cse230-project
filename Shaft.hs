@@ -3,26 +3,25 @@
 
 module Shaft where
 
-import Data.Monoid
-
-import Control.Lens ((%~), (&), (.~), (^.), _1, _2, makeLenses)
+import Control.Lens (makeLenses, (%~), (&), (.~), (^.), _1, _2)
 import Control.Monad (guard)
 import Data.List (findIndex)
 import Data.Maybe (fromMaybe)
-import qualified Data.Sequence as SEQ
+import Data.Monoid
 import Data.Sequence
-  ( ViewL((:<), EmptyL)
-  , ViewR((:>), EmptyR)
-  , (|>)
-  , singleton
-  , viewl
-  , viewr
+  ( ViewL (EmptyL, (:<)),
+    ViewR (EmptyR, (:>)),
+    singleton,
+    viewl,
+    viewr,
+    (|>),
   )
-import GHC.IO.Handle.Types (Handle__(haDecoder))
+import qualified Data.Sequence as SEQ
+import GHC.IO.Handle.Types (Handle__ (haDecoder))
 import Graphics.Vty.PictureToSpans (isOutOfBounds)
-import Linear.V2 (V2(..))
+import Linear.V2 (V2 (..))
+import System.Random (Random (..), newStdGen, randomRs)
 import Prelude hiding (Left, Right)
-import System.Random (Random(..), newStdGen, randomRs)
 
 type Name = ()
 
@@ -36,8 +35,8 @@ type Depth = Int
 
 type Player = [Coord]
 
-data Tick =
-  Tick
+data Tick
+  = Tick
 
 data Movement
   = Up
@@ -51,34 +50,31 @@ data Mode
   | Hard
   deriving (Eq, Show)
 
-data ModeMap =
-  ModeMap
-    { _easy :: Modes
-    , _medium :: Modes
-    , _hard :: Modes
-    }
+data ModeMap = ModeMap
+  { _easy :: Modes,
+    _medium :: Modes,
+    _hard :: Modes
+  }
   deriving (Eq, Show)
 
 type Frequency = [Int]
 
-data Modes =
-  Modes
-    { _x :: [Int]
-    , _y :: [Int]
-    }
+data Modes = Modes
+  { _x :: [Int],
+    _y :: [Int]
+  }
   deriving (Eq, Show)
 
-data Game =
-  Game
-    { _player :: Player
-    , _score :: Score
-    , _health :: Health
-    , _alive :: Bool
-    , _modeMap :: ModeMap
-    , _mode :: Mode
-    , _time :: Int
-    , _paused :: Bool
-    }
+data Game = Game
+  { _player :: Player,
+    _score :: Score,
+    _health :: Health,
+    _alive :: Bool,
+    _modeMap :: ModeMap,
+    _mode :: Mode,
+    _time :: Int,
+    _paused :: Bool
+  }
   deriving (Show)
 
 makeLenses ''Game
@@ -101,14 +97,14 @@ initState = do
   mode <- modeMaps
   return
     Game
-      { _player = initPlayer
-      , _score = 0
-      , _health = 10
-      , _alive = True
-      , _modeMap = mode
-      , _mode = Easy
-      , _time = 0
-      , _paused = False
+      { _player = initPlayer,
+        _score = 0,
+        _health = 10,
+        _alive = True,
+        _modeMap = mode,
+        _mode = Easy,
+        _time = 0,
+        _paused = False
       }
 
 modeMaps :: IO ModeMap
