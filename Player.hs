@@ -240,6 +240,7 @@ moveEnemyBullet :: EnemyBullet -> EnemyBullet
 moveEnemyBullet e = e & coordEnemy %~ (onMove'' (e^.enemyDirection))
 
 moveEnemy' :: MoveMode -> Direction -> EnemyPlane -> EnemyPlane
+moveEnemy' Strike dir enemy = (enemy & coords %~ (onMove' dir)) & coordTurret %~ (onMove'' dir)
 moveEnemy' Move dir enemy = (enemy & coords %~ (onMove' dir)) & coordTurret %~ (onMove'' dir)
 moveEnemy' TurrentMove dir enemy = turrentMove (enemy^.coordTurret) dir enemy
 
