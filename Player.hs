@@ -145,7 +145,7 @@ createEnemy Fighter dir coord = do
     _price = 100,
     _enemyHealth = 1,
     _killed = True,
-    _enemyFireRate = 3,
+    _enemyFireRate = 8,
     _fireMode = (firePool!!id),
     _moveMode = (movePool!!id),
     _direction = dir
@@ -158,7 +158,7 @@ createEnemy Bomber dir coord = do
     _price = 500,
     _enemyHealth = 4,
     _killed = True,
-    _enemyFireRate = 3,
+    _enemyFireRate = 8,
     _fireMode = (firePool!!id),
     _moveMode = Move,
     _direction = dir
@@ -172,7 +172,7 @@ createEnemy Starship dir coord = do
     _price = 1500,
     _enemyHealth = 10,
     _killed = True,
-    _enemyFireRate = 3,
+    _enemyFireRate = 8,
     _fireMode = (firePool!!id1),
     _moveMode = case dir of
       Dn -> movePool!!id2
@@ -237,7 +237,7 @@ movePlayer dir p = if (playerOutOfBoundary (onMove'' dir (p^.coord)))
   else p & coord %~ (onMove'' dir)
 
 playerOutOfBoundary :: Coord -> Bool
-playerOutOfBoundary coord = (coord ^. _2 > gridHeight - 4) || (coord ^. _2 < 2) || (coord ^. _1 > gridWidth - 3) || (coord ^. _1 < 2)
+playerOutOfBoundary coord = (coord ^. _2 > gridHeight - 4) || (coord ^. _2 < 1) || (coord ^. _1 > gridWidth - 3) || (coord ^. _1 < 2)
 
 outOfBoundary :: Coord -> Bool
 outOfBoundary coord = (coord ^. _2 > gridHeight - 1) || (coord ^. _2 < 0) || (coord ^. _1 > gridWidth - 1) || (coord ^. _1 < 0)
