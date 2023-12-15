@@ -14,7 +14,7 @@ data Tick
   = Tick
 
 enemyGenerateRate :: Int
-enemyGenerateRate = 50
+enemyGenerateRate = 100
 
 bulletGenerateRate :: Int
 bulletGenerateRate = 5
@@ -57,24 +57,6 @@ tick g
 
 isPaused :: Game -> Bool
 isPaused g = paused g || gameOver g
-
--- tick :: Game -> Game
--- tick = evalState updateGame
-
--- updateGame :: State Game Game
--- updateGame = do
---   g <- get
---   if isOver g
---     then return GameOver
---     else do
---         e' <- updateEnemies g
---         return Game {
---         player  = updatePlayer g,
---         enemies = e',
---         playerBullets = updatePlayerBullet g,
---         enemyBullets  = updateEnemyBullet g,
---         timer   = updateTimer g
---       }
 
 isOver :: Game -> Bool
 isOver g = isPlayerAlive (player g)
@@ -128,7 +110,7 @@ updateEnemyList p (e:es) pb t
                               else es')
 
 isEnemyAlive :: EnemyPlane -> Bool
-isEnemyAlive e = _killed e
+isEnemyAlive e = (_killed e) || ((_enemyHealth e) <= 0)
 
 inBoundary :: EnemyPlane -> Bool
 inBoundary e = not (outOfBoundary (_coordTurret e))
@@ -148,7 +130,8 @@ checkBulletHit (b:bs) e =
     else checkBulletHit bs e
 
 updatePlayerBullet :: Game -> [PlayerBullet]
-updatePlayerBullet Game{ playerBullets = pb, enemies = e } = updatePlayerBulletList pb e
+updatePlayerBullet Game{ player = p, playerBullets = pb, enemies = e, timer = t } = 
+  (updatePlayerBulletList pb e) ++ (myBulletShoot p t)
 
 updatePlayerBulletList :: [PlayerBullet] -> [EnemyPlane] -> [PlayerBullet]
 updatePlayerBulletList [] _ = []
@@ -160,12 +143,17 @@ bulletHitList p [] = False
 bulletHitList p (e:es) = (bulletHit p e) || (bulletHitList p es)
 
 updateEnemyBullet :: Game -> [EnemyBullet]
-updateEnemyBullet Game { enemyBullets = eb, player = p }  = updateEnemyBulletList eb p
+updateEnemyBullet Game { enemies = e, enemyBullets = eb, player = p, timer = t }  = 
+  (updateEnemyBulletList eb p) ++ (enemiesShoot e t)
 
 updateEnemyBulletList :: [EnemyBullet] -> PlayerPlane -> [EnemyBullet]
 updateEnemyBulletList [] _ = []
 updateEnemyBulletList (e:es) p =
   if bulletCrash p e then updateEnemyBulletList es p else e:(updateEnemyBulletList es p)
+
+enemiesShoot :: [EnemyPlane] -> Time -> [EnemyBullet]
+enemiesShoot [] t = []
+enemiesShoot (e:es) t = (enemyBulletShoot e t) ++ (enemiesShoot es t)
 
 updateTimer :: Game -> Time
 updateTimer Game { timer = t } = t + 1
