@@ -97,6 +97,9 @@ generatePlayer = Player {
     _playerFire = Cannon
   }
 
+generatePlayerCoords :: Coord -> [Coord]
+generatePlayerCoords coord = [(coord + (V2 1 0)), (coord + (V2 2 0)), (coord - (V2 1 0)), (coord - (V2 2 0)), (coord + (V2 0 1)), (coord + (V2 0 2)), (coord + (V2 0 3)), (coord + (V2 (-1) (-1))), (coord + (V2 0 (-1))), (coord + (V2 1 (-1)))]
+
 isPlayerAlive :: PlayerPlane -> Bool
 isPlayerAlive p = (p ^. playerHealth <= 0) || (not (p ^.alive))
 
@@ -229,9 +232,12 @@ bulletHit player enemy = (player^.coordBullet) `elem` (enemy^.coords)
 -- MoveBehaviors
 -- move... is the final step
 movePlayer :: Direction -> PlayerPlane -> PlayerPlane
-movePlayer dir p = if (outOfBoundary (onMove'' dir (p^.coord)))
+movePlayer dir p = if (playerOutOfBoundary (onMove'' dir (p^.coord)))
   then p
   else p & coord %~ (onMove'' dir)
+
+playerOutOfBoundary :: Coord -> Bool
+playerOutOfBoundary coord = (coord ^. _2 > gridHeight - 4) || (coord ^. _2 < 2) || (coord ^. _1 > gridWidth - 3) || (coord ^. _1 < 2)
 
 outOfBoundary :: Coord -> Bool
 outOfBoundary coord = (coord ^. _2 > gridHeight - 1) || (coord ^. _2 < 0) || (coord ^. _1 > gridWidth - 1) || (coord ^. _1 < 0)

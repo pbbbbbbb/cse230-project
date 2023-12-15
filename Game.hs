@@ -14,7 +14,7 @@ data Tick
   = Tick
 
 enemyGenerateRate :: Int
-enemyGenerateRate = 100
+enemyGenerateRate = 50
 
 bulletGenerateRate :: Int
 bulletGenerateRate = 5
@@ -133,7 +133,7 @@ updatePlayerBullet :: Game -> [PlayerBullet]
 updatePlayerBullet g = map movePlayerBullet (updatePlayerBullet' g)
 
 updatePlayerBullet' :: Game -> [PlayerBullet]
-updatePlayerBullet' Game{ player = p, playerBullets = pb, enemies = e, timer = t } = 
+updatePlayerBullet' Game{ player = p, playerBullets = pb, enemies = e, timer = t } =
   (updatePlayerBulletList pb e) ++ (myBulletShoot p t)
 
 updatePlayerBulletList :: [PlayerBullet] -> [EnemyPlane] -> [PlayerBullet]
@@ -149,7 +149,7 @@ updateEnemyBullet :: Game -> [EnemyBullet]
 updateEnemyBullet g = map moveEnemyBullet (updateEnemyBullet' g)
 
 updateEnemyBullet' :: Game -> [EnemyBullet]
-updateEnemyBullet' Game { enemies = e, enemyBullets = eb, player = p, timer = t }  = 
+updateEnemyBullet' Game { enemies = e, enemyBullets = eb, player = p, timer = t }  =
   (updateEnemyBulletList eb p) ++ (enemiesShoot e t)
 
 updateEnemyBulletList :: [EnemyBullet] -> PlayerPlane -> [EnemyBullet]
