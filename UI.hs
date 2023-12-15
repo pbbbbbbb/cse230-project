@@ -62,6 +62,8 @@ import Shaft
     score,
   )
 
+import Player
+
 data Cell
   = Empty
   | Player

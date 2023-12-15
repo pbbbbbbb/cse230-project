@@ -6,8 +6,8 @@ import Enemy
 import Player
 import Control.Monad.State
 import GHC.IO.Exception (IOErrorType(TimeExpired))
-
-type Time = Int
+-- im
+-- type Time = Int
 
 interval :: Int
 interval = 100

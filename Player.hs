@@ -7,21 +7,26 @@
 
 --isPlayerAlive :: Player -> Bool
 --isPlayerAlive p = undefined
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DataKinds #-}
 module Player where
 import Data.Monoid
 
+import Control.Lens (makeLenses, (%~), (&), (.~), (^.), _1, _2)
 import Linear.V2 (V2 (..))
 import qualified Data.Sequence as SEQ
 import Test.QuickCheck
 
+-- import Game (Time)
+type Time = Int
+
 type Coord = V2 Int
 
-data PlayerFire = Cannon | Shotgun
-data FireMode = None | SingleDown | SingleShotgun | SingleCorner | SingleCross | SingleFlower | LazerDown | LazerCorner | LazerCross
-data MoveMode = Strike | Move | TurrentMove
-data Direction = Up | Dn | Lft | Rt | UL | UR | DL | DR | Stay
-data EnemyType = Fighter | Bomber | Starship | Turrent
+data PlayerFire = Cannon | Shotgun deriving (Show)
+data FireMode = None | SingleDown | SingleShotgun | SingleCorner | SingleCross | SingleFlower | LazerDown | LazerCorner | LazerCross deriving (Show)
+data MoveMode = Strike | Move | TurrentMove deriving (Show)
+data Direction = Up | Dn | Lft | Rt | UL | UR | DL | DR | Stay deriving (Show)
+data EnemyType = Fighter | Bomber | Starship | Turrent deriving (Show)
 
 gridWidth :: Int
 gridWidth = 50
@@ -70,6 +75,12 @@ data EnemyBullet = EnemyBullet {
 } deriving (Show)
 --Generators
 --generate... is the final step
+
+makeLenses ''PlayerPlane
+makeLenses ''EnemyPlane
+makeLenses ''PlayerBullet
+makeLenses ''EnemyBullet
+
 generatePlayer :: PlayerPlane
 generatePlayer = do
   return Player {
@@ -103,7 +114,7 @@ generateCoord Up = do
 generateCoord Dn = do
   coord1 <- chooseInt (0, gridWidth)
   return (V2 coord1 gridHeight)
-generateCoord Lft = do 
+generateCoord Lft = do
   coord1 <- chooseInt (0, gridHeight)
   return (V2 0 coord1)
 generateCoord Rt = do
@@ -173,7 +184,7 @@ generateCoordsRt coord 0 = []
 generateCorrdsRt coord n = coord:(generateCoordsRt (coord + (V2 0 1)) (n - 1))
 createStarShipCoord :: Coord -> Int -> [Coord]
 createStarShipCoord coord 6 = generateCoordsRt coord 5
-createStarShipCoord coord 5 = (generateCoordsRt coord 3) ++ (generateCoordsRt (coord + (V2 0 6)) 3) ++ (createStarShipCoord (coord + (V2 1 2)) (n + 1))
+createStarShipCoord coord 5 = (generateCoordsRt coord 3) ++ (generateCoordsRt (coord + (V2 0 6)) 3) ++ (createStarShipCoord (coord + (V2 1 2)) (5 + 1))
 createStarShipCoord coord n = generateCoordsRt coord ((2 * n) - 1) ++ (createStarShipCoord (coord + (V2 1 -1)) (n + 1))
 --HitBehaviors
 --on... is the final step
@@ -277,7 +288,7 @@ enemyBulletShoot' LazerCross turrent rate t = if (t `mod` (2 * rate)) < rate
 enemyBulletShoot' md turrent rate t = if (t `mod` (rate)) == 0
     then enemyBulletGenerate md turrent
     else []
-  
+
 enemyBulletGenerate :: FireMode -> Coord -> [EnemyBullet]
 enemyBulletGenerate SingleDown turrent = [createEnemyBullet turrent Dn]
 enemyBulletGenerate SingleShotgun turrent = [(createEnemyBullet turrent Dn), (createEnemyBullet turrent DL), (createEnemyBullet turrent DR)]
@@ -289,11 +300,11 @@ enemyBulletGenerate LazerCorner turrent = [(createEnemyBullet turrent DL), (crea
 enemyBulletGenerate LazerCross turrent = [(createEnemyBullet turrent Dn), (createEnemyBullet turrent Up), (createEnemyBullet turrent Lft), (createEnemyBullet turrent Rt)]
 enemyBulletGenerate _ _ = []
 
-myBulletShoot :: PlayerPlane -> Time -> [MyBullet]
+myBulletShoot :: PlayerPlane -> Time -> [PlayerBullet]
 myBulletShoot player t =
   if (t `mod` (player^.playerFireRate)) == 0
     then myBulletGenerate (player^.playerFire) (player^.coord)
     else []
-myBulletGenerate :: PlayerFire -> Coord -> [MyBullet]
+myBulletGenerate :: PlayerFire -> Coord -> [PlayerBullet]
 myBulletGenerate Cannon turrent = [createMyBullet turrent Up]
-myBulletGenerate Shotgun turrent = [(createMyBullet turrent Up), (createMyBullet turrent UL), (createMyBullet turrent UR)]
+myBulletGenerate Shotgun turrent = [createMyBullet turrent Up, createMyBullet turrent UL, createMyBullet turrent UR]
