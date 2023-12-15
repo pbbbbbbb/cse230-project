@@ -108,7 +108,7 @@ drawStats g =
           padTop (Pad 1) (drawHealth1 (player g ^. playerHealth)),
           padTop (Pad 1) (drawTimer (timer g)),
           -- padTop (Pad 1) (drawHealth2 (g ^. health)),
-          drawGameOver (player g ^. alive)
+          drawGameOver $ not (player g ^. alive)
         ]
     )
 
@@ -161,8 +161,8 @@ drawHealth1 s =
 --           str (show s)
 
 drawGameOver :: Bool -> Widget Name
-drawGameOver False = withAttr gameOverAttr $ C.hCenter $ str "Game Over"
-drawGameOver _ = emptyWidget
+drawGameOver True = withAttr gameOverAttr $ C.hCenter $ str "Game Over"
+drawGameOver False = emptyWidget
 
 gameInit :: IO Game
 gameInit = do

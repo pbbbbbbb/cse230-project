@@ -26,15 +26,15 @@ handleEvent :: Game -> BrickEvent Name Tick -> EventM Name (Next Game)
 -- handleEvent g (VtyEvent (V.EvKey (V.KChar 'p') [])) =
 --   continue $ g & paused %~ not
 handleEvent g (AppEvent Tick)
-  | not (paused g) = liftIO (tick g) >>= continue
+  | not (isPaused g) = liftIO (tick g) >>= continue
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'w') []))
-  | not (paused g) = continue $ movePlayerSingleStep Up g
+  | not (isPaused g) = continue $ movePlayerSingleStep Up g
 handleEvent g (VtyEvent (V.EvKey (V.KChar 's') []))
-  | not (paused g) = continue $ movePlayerSingleStep Dn g
+  | not (isPaused g) = continue $ movePlayerSingleStep Dn g
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'a') []))
-  | not (paused g) = continue $ movePlayerSingleStep Lft g
+  | not (isPaused g) = continue $ movePlayerSingleStep Lft g
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'd') []))
-  | not (paused g) = continue $ movePlayerSingleStep Rt g
+  | not (isPaused g) = continue $ movePlayerSingleStep Rt g
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'q') [])) = halt g
 handleEvent g (VtyEvent (V.EvKey V.KEsc [])) = halt g
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'r') [])) =

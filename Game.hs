@@ -17,7 +17,7 @@ data Tick
   = Tick
 
 enemyGenerateRate :: Int
-enemyGenerateRate = 100
+enemyGenerateRate = 50
 
 data Game = Game {
   player        :: PlayerPlane,
@@ -41,7 +41,7 @@ initGame = Game {
 tick :: Game -> IO Game
 tick GameOver = return GameOver
 tick g
-  | isOver g = GameOver
+  | isOver g = return GameOver
   |otherwise = do e' <- updateEnemies g
                   return Game {
                     player  = updatePlayer g,
@@ -51,6 +51,10 @@ tick g
                     timer   = updateTimer g,
                     paused = False
                   }
+
+isPaused :: Game -> Bool
+isPaused GameOver = True
+isPaused g = paused g
 
 -- tick :: Game -> Game
 -- tick = evalState updateGame
