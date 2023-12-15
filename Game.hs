@@ -112,7 +112,7 @@ updateEnemyList p (e:es) pb t
                               else es')
 
 isEnemyAlive :: EnemyPlane -> Bool
-isEnemyAlive e = not (_killed e)
+isEnemyAlive e = _killed e
 
 inBoundary :: EnemyPlane -> Bool
 inBoundary e = not (outOfBoundary (_coordTurret e))
@@ -156,63 +156,6 @@ updateEnemyBulletList (e:es) p =
 updateTimer :: Game -> Time
 updateTimer GameOver = error "Game over, cannot update timer."
 updateTimer Game { timer = t } = t + 1
-
-
--- data Movement
---   = MoveUp
---   | MoveDown
---   | MoveLeft
---   | MoveRight
-
--- shouldUp :: Game -> Bool
--- shouldUp g = shouldUp' [coord ^. _2 | coord <- [player g ^. coord]]
-
--- shouldUp' :: [Int] -> Bool
--- shouldUp' xs = (xs /= []) && maximum xs < gridHeight - 1
-
--- shouldDown :: Game -> Bool
--- shouldDown g = shouldDown' [coord ^. _2 | coord <- [player g ^. coord]]
-
--- shouldDown' :: [Int] -> Bool
--- shouldDown' xs = (xs /= []) && maximum xs > 0
-
--- shouldLeft :: Game -> Bool
--- shouldLeft g = shouldLeft' [coord ^. _1 | coord <- [player g ^. coord]]
-
--- shouldLeft' :: [Int] -> Bool
--- shouldLeft' xs = (xs /= []) && minimum xs > 0
-
--- shouldRight :: Game -> Bool
--- shouldRight g = shouldRight' [coord ^. _1 | coord <- [player g ^. coord]]
-
--- shouldRight' :: [Int] -> Bool
--- shouldRight' xs = (xs /= []) && minimum xs < gridWidth - 1
-
--- afterMoveSignleStep :: Game -> Game
--- afterMoveSignleStep g =
---   fromMaybe g $ do
---     guard (not $ isDead g)
---     return g
-
--- movePlayer :: Movement -> Game -> Game
--- movePlayer dir g =
---   case dir of
---     MoveUp ->
---       if shouldUp g
---         then g & player %~ fmap (+ V2 0 1)
---         else g
---     MoveDown ->
---       if shouldDown g
---         then g & player %~ fmap (+ V2 0 (-1))
---         else g
---     MoveLeft ->
---       if shouldLeft g
---         then g & player %~ fmap (+ V2 (-1) 0)
---         else g
---     MoveRight ->
---       if shouldRight g
---         then g & player %~ fmap (+ V2 1 0)
---         else g
 
 movePlayerSingleStep :: Direction -> Game -> Game
 movePlayerSingleStep dir game =

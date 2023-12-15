@@ -41,24 +41,21 @@ import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad (forever)
 import Controller (handleEvent)
 import Data.IORef (IORef, modifyIORef, newIORef, readIORef)
-import GHC.IO (unsafePerformIO)
+import Game
 import qualified Graphics.Vty as V
 import Lens.Micro (mapped, (^.))
 import Linear.V2 (V2 (..))
-
-import Game
-
 import Player
-  (
-    gridHeight,
-    gridWidth,
-    coord,
-    playerHealth,
+  ( Time,
     alive,
-    score,
+    coord,
     coordBullet,
     coordEnemy,
-    coordTurret
+    coords,
+    gridHeight,
+    gridWidth,
+    playerHealth,
+    score,
   )
 
 data Cell
@@ -81,9 +78,10 @@ app =
 
 drawUI :: Game -> [Widget Name]
 drawUI g = [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
-  -- if g ^. paused
-  --   then [C.center (padRight (Pad 2) (drawStats g <+> drawPauseScreen))]
-  --   else [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
+
+-- if g ^. paused
+--   then [C.center (padRight (Pad 2) (drawStats g <+> drawPauseScreen))]
+--   else [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
 
 drawPauseScreen :: Widget Name
 drawPauseScreen =
@@ -100,20 +98,27 @@ drawPauseScreen =
                   fill ' '
                 ]
 
--- TODO: scores and healths for player 1 & 2
 drawStats :: Game -> Widget Name
 drawStats g =
   hLimit
     20
     ( vBox
-        [
-          padTop (Pad 1) (drawScore1 (player g ^. score)),
+        [ padTop (Pad 1) (drawScore1 (player g ^. score)),
           -- padTop (Pad 1) (drawScore2 (g ^. score)),
           padTop (Pad 1) (drawHealth1 (player g ^. playerHealth)),
+          padTop (Pad 1) (drawTimer (timer g)),
           -- padTop (Pad 1) (drawHealth2 (g ^. health)),
           drawGameOver (player g ^. alive)
         ]
     )
+
+drawTimer :: Time -> Widget Name
+drawTimer s =
+  withBorderStyle BS.unicodeRounded $
+    B.borderWithLabel (str " Timer ") $
+      C.hCenter $
+        padAll 1 $
+          str (show s)
 
 drawScore1 :: Int -> Widget Name
 drawScore1 s =
@@ -171,7 +176,6 @@ gameInit = do
   initialVty <- builder
   customMain initialVty builder (Just channel) app state
 
--- TODO: draw enemies, player bullets, enemy bullets
 drawGrid :: Game -> Widget Name
 drawGrid g =
   withBorderStyle BS.unicodeRounded $
@@ -183,10 +187,9 @@ drawGrid g =
     drawCoord = drawCell . cellAt
     cellAt c
       | c == (player g ^. coord) = Player
-      | any (\b -> c == (b ^. coordTurret)) (enemies g) = PlayerBullet
+      | any (\b -> c `elem` (b ^. coords)) (enemies g) = Enemy
       | any (\b -> c == (b ^. coordBullet)) (playerBullets g) = PlayerBullet
       | any (\b -> c == (b ^. coordEnemy)) (enemyBullets g) = EnemyBullet
-      -- \| c `elem` (g ^. enemyBullets) = EnemyBullet
       | otherwise = Empty
 
 drawCell :: Cell -> Widget Name
@@ -224,10 +227,10 @@ enemyCell :: Widget Name
 enemyCell = str "#"
 
 playerBulletCell :: Widget Name
-playerBulletCell = str "."
+playerBulletCell = str "@"
 
 enemyBulletCell :: Widget Name
-enemyBulletCell = str "."
+enemyBulletCell = str "="
 
 theMap :: AttrMap
 theMap =
