@@ -130,7 +130,10 @@ checkBulletHit (b:bs) e =
     else checkBulletHit bs e
 
 updatePlayerBullet :: Game -> [PlayerBullet]
-updatePlayerBullet Game{ player = p, playerBullets = pb, enemies = e, timer = t } = 
+updatePlayerBullet g = map movePlayerBullet (updatePlayerBullet' g)
+
+updatePlayerBullet' :: Game -> [PlayerBullet]
+updatePlayerBullet' Game{ player = p, playerBullets = pb, enemies = e, timer = t } = 
   (updatePlayerBulletList pb e) ++ (myBulletShoot p t)
 
 updatePlayerBulletList :: [PlayerBullet] -> [EnemyPlane] -> [PlayerBullet]
@@ -143,7 +146,10 @@ bulletHitList p [] = False
 bulletHitList p (e:es) = (bulletHit p e) || (bulletHitList p es)
 
 updateEnemyBullet :: Game -> [EnemyBullet]
-updateEnemyBullet Game { enemies = e, enemyBullets = eb, player = p, timer = t }  = 
+updateEnemyBullet g = map moveEnemyBullet (updateEnemyBullet' g)
+
+updateEnemyBullet' :: Game -> [EnemyBullet]
+updateEnemyBullet' Game { enemies = e, enemyBullets = eb, player = p, timer = t }  = 
   (updateEnemyBulletList eb p) ++ (enemiesShoot e t)
 
 updateEnemyBulletList :: [EnemyBullet] -> PlayerPlane -> [EnemyBullet]
