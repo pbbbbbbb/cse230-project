@@ -8,9 +8,6 @@ import GHC.IO.Exception (IOErrorType(TimeExpired))
 import Control.Lens (makeLenses, (%~), (&), (.~), (^.), _1, _2)
 import Data.Maybe (fromMaybe)
 
--- im
--- type Time = Int
-
 type Name = ()
 
 data Tick
@@ -19,14 +16,18 @@ data Tick
 enemyGenerateRate :: Int
 enemyGenerateRate = 50
 
+bulletGenerateRate :: Int
+bulletGenerateRate = 5
+
 data Game = Game {
   player        :: PlayerPlane,
   enemies       :: [EnemyPlane],
   playerBullets :: [PlayerBullet],
   enemyBullets  :: [EnemyBullet],
   timer         :: Time,
-  paused        :: Bool
-} | GameOver deriving (Show)
+  paused        :: Bool,
+  gameOver      :: Bool
+} deriving (Show)
 
 initGame :: Game
 initGame = Game {
@@ -35,11 +36,11 @@ initGame = Game {
   playerBullets = [],
   enemyBullets  = [],
   timer = 0,
-  paused = False
+  paused = False,
+  gameOver = False
 }
 
 tick :: Game -> IO Game
-tick GameOver = return GameOver
 tick g
   | isOver g = return GameOver
   |otherwise = do e' <- updateEnemies g
@@ -77,8 +78,18 @@ isPaused g = paused g
 isOver :: Game -> Bool
 isOver g = isPlayerAlive (player g)
 
+setGameOver :: Game -> Game
+setGameOver g = Game {
+    player = (player g),
+    enemies = (enemies g),
+    playerBullets = (playerBullets g),
+    enemyBullets  = (enemyBullets g),
+    timer = (timer g),
+    paused = (paused g),
+    gameOver = True
+  }
+
 updatePlayer :: Game -> PlayerPlane
-updatePlayer GameOver = error "Game over, cannot update player."
 updatePlayer Game{ player = p, enemies = e, enemyBullets = eb } = checkBulletCrash (checkEnemyCrash p e) eb
 
 checkEnemyCrash :: PlayerPlane -> [EnemyPlane] -> PlayerPlane
@@ -96,7 +107,6 @@ checkBulletCrash p (b:bs) =
     else checkBulletCrash p bs
 
 updateEnemies :: Game -> IO [EnemyPlane]
-updateEnemies GameOver = error "Game over, cannot update enemies."
 updateEnemies Game{ player = p, enemies = e, playerBullets = pb, timer = t }
   = updateEnemyList p e pb t
 
@@ -137,7 +147,6 @@ checkBulletHit (b:bs) e =
     else checkBulletHit bs e
 
 updatePlayerBullet :: Game -> [PlayerBullet]
-updatePlayerBullet GameOver = error "Game over, cannot update enemy bullets."
 updatePlayerBullet Game{ playerBullets = pb, enemies = e } = updatePlayerBulletList pb e
 
 updatePlayerBulletList :: [PlayerBullet] -> [EnemyPlane] -> [PlayerBullet]
@@ -150,7 +159,6 @@ bulletHitList p [] = False
 bulletHitList p (e:es) = (bulletHit p e) || (bulletHitList p es)
 
 updateEnemyBullet :: Game -> [EnemyBullet]
-updateEnemyBullet GameOver = error "Game over, cannot update player bullets."
 updateEnemyBullet Game { enemyBullets = eb, player = p }  = updateEnemyBulletList eb p
 
 updateEnemyBulletList :: [EnemyBullet] -> PlayerPlane -> [EnemyBullet]
@@ -159,7 +167,6 @@ updateEnemyBulletList (e:es) p =
   if bulletCrash p e then updateEnemyBulletList es p else e:(updateEnemyBulletList es p)
 
 updateTimer :: Game -> Time
-updateTimer GameOver = error "Game over, cannot update timer."
 updateTimer Game { timer = t } = t + 1
 
 movePlayerSingleStep :: Direction -> Game -> Game
