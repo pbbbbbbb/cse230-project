@@ -110,7 +110,7 @@ updateEnemyList p (e:es) pb t
                               else es')
 
 isEnemyAlive :: EnemyPlane -> Bool
-isEnemyAlive e = (_killed e) || ((_enemyHealth e) > 0)
+isEnemyAlive e = (_killed e) && ((_enemyHealth e) > 0)
 
 inBoundary :: EnemyPlane -> Bool
 inBoundary e = not (outOfBoundary (_coordTurret e))
