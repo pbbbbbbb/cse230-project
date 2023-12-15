@@ -230,8 +230,8 @@ movePlayer dir p = if (outOfBoundary (onMove'' dir (p^.coord)))
 outOfBoundary :: Coord -> Bool
 outOfBoundary coord = (coord ^. _2 > gridHeight) || (coord ^. _2 < 0) || (coord ^. _1 > gridWidth) || (coord ^. _1 < 0)
 
-moveEnemy :: EnemyPlane -> EnemyPlane
-moveEnemy enemy = moveEnemy' (enemy^.moveMode) (enemy^.direction) enemy
+moveEnemy :: Time -> EnemyPlane -> EnemyPlane
+moveEnemy t enemy = moveEnemy' t (enemy^.moveMode) (enemy^.direction) enemy
 
 movePlayerBullet :: PlayerBullet -> PlayerBullet
 movePlayerBullet p = p & coordBullet %~ (onMove'' (p^.playerDirection))
@@ -239,10 +239,14 @@ movePlayerBullet p = p & coordBullet %~ (onMove'' (p^.playerDirection))
 moveEnemyBullet :: EnemyBullet -> EnemyBullet
 moveEnemyBullet e = e & coordEnemy %~ (onMove'' (e^.enemyDirection))
 
-moveEnemy' :: MoveMode -> Direction -> EnemyPlane -> EnemyPlane
-moveEnemy' Strike dir enemy = (enemy & coords %~ (onMove' dir)) & coordTurret %~ (onMove'' dir)
-moveEnemy' Move dir enemy = (enemy & coords %~ (onMove' dir)) & coordTurret %~ (onMove'' dir)
-moveEnemy' TurrentMove dir enemy = turrentMove (enemy^.coordTurret) dir enemy
+moveEnemy' :: Time -> MoveMode -> Direction -> EnemyPlane -> EnemyPlane
+moveEnemy' t Strike dir enemy = (enemy & coords %~ (onMove' dir)) & coordTurret %~ (onMove'' dir)
+moveEnemy' t Move dir enemy = if (t`mod` 2 == 0)
+  then (enemy & coords %~ (onMove' dir)) & coordTurret %~ (onMove'' dir)
+  else enemy
+moveEnemy' t TurrentMove dir enemy = if (t`mod` 2 == 0)
+  then turrentMove (enemy^.coordTurret) dir enemy
+  else enemy
 
 turrentMove :: Coord -> Direction -> EnemyPlane -> EnemyPlane
 turrentMove (V2 a1 a2) dir enemy = if (a2 > (gridHeight * 4 `div` 5))
