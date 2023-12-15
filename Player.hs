@@ -128,10 +128,10 @@ generateCoord Dn = do
   return (V2 coord1 (gridHeight - 1))
 generateCoord Lft = do
   coord1 <- randomInt 0 (gridHeight - 1)
-  return (V2 0 coord1)
+  return (V2 (gridWidth - 1) coord1)
 generateCoord Rt = do
   coord1 <- randomInt 0 (gridHeight - 1)
-  return (V2 (gridWidth - 1) coord1)
+  return (V2 0 coord1)
 
 createEnemy :: EnemyType -> Direction -> Coord -> IO EnemyPlane
 createEnemy Fighter dir coord = do
@@ -196,7 +196,7 @@ generateCoordsRt coord 0 = []
 generateCorrdsRt coord n = coord:(generateCoordsRt (coord + (V2 1 0)) (n - 1))
 createStarShipCoord :: Coord -> Int -> [Coord]
 createStarShipCoord coord 6 = generateCoordsRt coord 5
-createStarShipCoord coord 5 = (generateCoordsRt coord 3) ++ (generateCoordsRt (coord + (V2 6 0)) 3) ++ (createStarShipCoord (coord + (V2 1 1)) (5 + 1))
+createStarShipCoord coord 5 = (generateCoordsRt coord 3) ++ (generateCoordsRt (coord + (V2 6 0)) 3) ++ (createStarShipCoord (coord + (V2 2 1)) (5 + 1))
 createStarShipCoord coord n = generateCoordsRt coord ((2 * n) - 1) ++ (createStarShipCoord (coord + (V2 (-1) 1)) (n + 1))
 --HitBehaviors
 --on... is the final step
