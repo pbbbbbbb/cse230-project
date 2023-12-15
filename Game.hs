@@ -42,20 +42,21 @@ initGame = Game {
 
 tick :: Game -> IO Game
 tick g
-  | isOver g = return GameOver
-  |otherwise = do e' <- updateEnemies g
+  | isOver g = return (setGameOver g)
+  | otherwise = do
+                  e' <- updateEnemies g
                   return Game {
                     player  = updatePlayer g,
                     enemies = e',
                     playerBullets = updatePlayerBullet g,
                     enemyBullets  = updateEnemyBullet g,
                     timer   = updateTimer g,
-                    paused = False
+                    paused = False,
+                    gameOver = False
                   }
 
 isPaused :: Game -> Bool
-isPaused GameOver = True
-isPaused g = paused g
+isPaused g = paused g || gameOver g
 
 -- tick :: Game -> Game
 -- tick = evalState updateGame
@@ -172,7 +173,6 @@ updateTimer Game { timer = t } = t + 1
 movePlayerSingleStep :: Direction -> Game -> Game
 movePlayerSingleStep dir game =
   case game of
-    GameOver -> GameOver
     Game { player = p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, paused = ps } ->
       if paused game then game
-      else Game { player = movePlayer dir p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, paused = ps }
+      else Game { player = movePlayer dir p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, paused = ps, gameOver = False}

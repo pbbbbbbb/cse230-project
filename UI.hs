@@ -108,7 +108,7 @@ drawStats g =
           padTop (Pad 1) (drawHealth1 (player g ^. playerHealth)),
           padTop (Pad 1) (drawTimer (timer g)),
           -- padTop (Pad 1) (drawHealth2 (g ^. health)),
-          drawGameOver $ not (player g ^. alive)
+          drawGameOver $ gameOver g
         ]
     )
 
@@ -224,7 +224,7 @@ playerCell :: Widget Name
 playerCell = str "*"
 
 enemyCell :: Widget Name
-enemyCell = str "#"
+enemyCell = str "█"
 
 playerBulletCell :: Widget Name
 playerBulletCell = str "@"

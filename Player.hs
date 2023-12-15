@@ -194,7 +194,7 @@ createEnemy Turrent dir coord = do
 generateCoordsRt :: Coord -> Int -> [Coord]
 -- generateCoordsRt _ _ = []
 generateCoordsRt coord 0 = []
-generateCoordsRt coord n = coord : (generateCoordsRt (coord + (V2 0 1)) (n - 1))
+generateCoordsRt coord n = coord : (generateCoordsRt (coord + (V2 1 0)) (n - 1))
 createStarShipCoord :: Coord -> Int -> [Coord]
 createStarShipCoord coord 6 = generateCoordsRt coord 5
 createStarShipCoord coord 5 = (generateCoordsRt coord 3) ++ (generateCoordsRt (coord + (V2 6 0)) 3) ++ (createStarShipCoord (coord + (V2 2 1)) (5 + 1))
