@@ -237,7 +237,7 @@ movePlayer dir p = if (playerOutOfBoundary (onMove'' dir (p^.coord)))
   else p & coord %~ (onMove'' dir)
 
 playerOutOfBoundary :: Coord -> Bool
-playerOutOfBoundary coord = (coord ^. _2 > gridHeight - 4) || (coord ^. _2 < 2) || (coord ^. _1 > gridWidth - 3) || (coord ^. _1 < 2)
+playerOutOfBoundary coord = (coord ^. _2 > gridHeight - 1) || (coord ^. _2 < 0) || (coord ^. _1 > gridWidth - 1) || (coord ^. _1 < 0)
 
 outOfBoundary :: Coord -> Bool
 outOfBoundary coord = (coord ^. _2 > gridHeight - 1) || (coord ^. _2 < 0) || (coord ^. _1 > gridWidth - 1) || (coord ^. _1 < 0)
