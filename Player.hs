@@ -17,6 +17,12 @@ import Linear.V2 (V2 (..))
 import qualified Data.Sequence as SEQ
 import Test.QuickCheck
 
+randomInt :: Int -> Int -> IO Int
+randomInt lo hi = do
+  gen <- newStdGen
+  let (value, _) = randomR (lo, hi) gen
+  return value
+
 -- import Game (Time)
 type Time = Int
 
@@ -96,33 +102,35 @@ isPlayerAlive p = (p ^. playerHealth <= 0) || (not (p ^.alive))
 
 generateEnemy :: EnemyType -> EnemyPlane
 generateEnemy Turrent = do
-  coord1 <- chooseInt(0 , gridWidth)
+  coord1 <- randomInt 0 gridWidth
   createEnemy Turrent Dn (V2 coord1 gridHeight)
 generateEnemy Starship = do
-  coord1 <- chooseInt(0 , gridWidth)
+  coord1 <- randomInt 0 gridWidth
   createEnemy Starship Dn (V2 coord1 gridHeight)
 generateEnemy tp = do
-  dir <- elements moveDirPool
+  ele <- randomInt 0 3
+  --dir <- elements moveDirPool
+  let dir = moveDirPool!!ele
   --coord = generateCoord dir
   createEnemy tp dir (generateCoord dir)
 
 generateCoord :: Direction -> Coord
 generateCoord Up = do
-  coord1 <- chooseInt(0, gridWidth)
+  coord1 <- randomInt 0 gridWidth
   (V2 coord1 0)
 generateCoord Dn = do
-  coord1 <- chooseInt(0, gridWidth)
+  coord1 <- randomInt 0 gridWidth
   (V2 coord1 gridHeight)
 generateCoord Lft = do
-  coord1 <- chooseInt(0, gridHeight)
+  coord1 <- randomInt 0 gridHeight
   (V2 0 coord1)
 generateCoord Rt = do
-  coord1 <- chooseInt(0, gridHeight)
+  coord1 <- randomInt 0 gridHeight
   (V2 gridWidth coord1)
 
 createEnemy :: EnemyType -> Direction -> Coord -> EnemyPlane
 createEnemy Fighter dir coord = do
-  id <- chooseInt (0, 1)
+  id <- randomInt 0 1
   Enemy {
     _coords = [coord, (coord - (V2 1 0)), (coord + (V2 1 0)), (coord + (V2 0 1)), (coord - (V2 0 1))],
     _coordTurret = coord,
@@ -135,7 +143,7 @@ createEnemy Fighter dir coord = do
     _direction = dir
   }
 createEnemy Bomber dir coord = do
-  id <- chooseInt (1, 2)
+  id <- randomInt 1 2
   Enemy {
     _coords = [coord, (coord - (V2 0 1)), (coord + (V2 0 1)), (coord - (V2 1 0)), (coord + (V2 0 2)), (coord - (V2 0 2)), (coord + (V2 1 2)), (coord + (V2 (-1) 2)), (coord + (V2 1 (-2))), (coord + (V2 (-1) (-2)))],
     _coordTurret = coord,
@@ -148,8 +156,8 @@ createEnemy Bomber dir coord = do
     _direction = dir
   }
 createEnemy Starship dir coord = do
-  id1 <- chooseInt (2, 8)
-  id2 <- chooseInt (1, 2)
+  id1 <- randomInt 2 8
+  id2 <- randomInt 1 2
   Enemy {
     _coords = (createStarShipCoord coord 1),
     _coordTurret = coord,
@@ -165,7 +173,7 @@ createEnemy Starship dir coord = do
   }
 
 createEnemy Turrent dir coord = do
-  id1 <- chooseInt (2, 8)
+  id1 <- randomInt 2 8
   Enemy {
     _coords = [(coord - (V2 1 0)), (coord + (V2 1 0)), (coord + (V2 0 1)), (coord - (V2 0 1)), (coord - (V2 1 1)), (coord + (V2 1 1)), (coord + (V2 1 (-1))), (coord - (V2 1 (-1)))],
     _coordTurret = coord,
