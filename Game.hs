@@ -44,9 +44,9 @@ tick :: Game -> IO Game
 tick g
   | isOver g = return (setGameOver g)
   | otherwise = do
-                  e' <- updateEnemies g
+                  (e', sc) <- updateEnemies g
                   return Game {
-                    player  = updatePlayer g,
+                    player  = addScore (updatePlayer g) sc,
                     enemies = e',
                     playerBullets = updatePlayerBullet g,
                     enemyBullets  = updateEnemyBullet g,
@@ -72,6 +72,9 @@ setGameOver g = Game {
     gameOver = True
   }
 
+addScore :: PlayerPlane -> Int -> PlayerPlane
+addScore p sc = p & _score %~ (+ sc)
+
 updatePlayer :: Game -> PlayerPlane
 updatePlayer Game{ player = p, enemies = e, enemyBullets = eb } = checkBulletCrash (checkEnemyCrash p e) eb
 
@@ -89,25 +92,25 @@ checkBulletCrash p (b:bs) =
     then checkBulletCrash (fst (onBulletCrash p b)) bs
     else checkBulletCrash p bs
 
-updateEnemies :: Game -> IO [EnemyPlane]
+updateEnemies :: Game -> IO ([EnemyPlane], Int)
 updateEnemies Game{ player = p, enemies = e, playerBullets = pb, timer = t }
   = updateEnemyList p e pb t
 
-updateEnemyList :: PlayerPlane -> [EnemyPlane] -> [PlayerBullet] -> Time -> IO [EnemyPlane]
+updateEnemyList :: PlayerPlane -> [EnemyPlane] -> [PlayerBullet] -> Time -> IO ([EnemyPlane], Int)
 updateEnemyList _ [] _ t
-  | t `mod` enemyGenerateRate == 0 = do { e' <- generateEnemy; return [e']}
-  | otherwise = return []
+  | t `mod` enemyGenerateRate == 0 = do { e' <- generateEnemy; return ([e'], 0)}
+  | otherwise = return ([], 0)
 updateEnemyList p (e:es) pb t
   | t `mod` enemyGenerateRate == 0 =
       do e'  <- generateEnemy
-         es' <- updateEnemyList p es pb t
+         (es', sc) <- updateEnemyList p es pb t
          return (if isEnemyAlive e && inBoundary e
-                    then e' : (updateEnemy p e pb t : es')
-                    else e' : es')
-  | otherwise = do es' <- updateEnemyList p es pb t
+                    then (e' : (updateEnemy p e pb t : es'), sc)
+                    else (e' : es', sc + (if isEnemyAlive e then 0 else (_price e))))
+  | otherwise = do (es', sc) <- updateEnemyList p es pb t
                    return (if isEnemyAlive e && inBoundary e
-                              then updateEnemy p e pb t : es'
-                              else es')
+                              then (updateEnemy p e pb t : es', sc)
+                              else (es', sc + (if isEnemyAlive e then 0 else (_price e))))
 
 isEnemyAlive :: EnemyPlane -> Bool
 isEnemyAlive e = (_killed e) && ((_enemyHealth e) > 0)
