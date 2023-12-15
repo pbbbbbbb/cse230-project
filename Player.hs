@@ -87,8 +87,9 @@ makeLenses ''EnemyPlane
 makeLenses ''PlayerBullet
 makeLenses ''EnemyBullet
 
-generatePlayer :: PlayerPlane
-generatePlayer =  Player {
+generatePlayer :: IO PlayerPlane
+generatePlayer = do
+  return Player {
     _coord = (V2 (gridWidth `div` 2) 1),
     _score = 0,
     _playerHealth = 10,
@@ -100,7 +101,7 @@ generatePlayer =  Player {
 isPlayerAlive :: PlayerPlane -> Bool
 isPlayerAlive p = (p ^. playerHealth <= 0) || (not (p ^.alive))
 
-generateEnemy :: EnemyType -> EnemyPlane
+generateEnemy :: EnemyType -> IO EnemyPlane
 generateEnemy Turrent = do
   coord1 <- randomInt 0 gridWidth
   createEnemy Turrent Dn (V2 coord1 gridHeight)
@@ -111,27 +112,27 @@ generateEnemy tp = do
   ele <- randomInt 0 3
   --dir <- elements moveDirPool
   let dir = moveDirPool!!ele
-  --coord = generateCoord dir
-  createEnemy tp dir (generateCoord dir)
+  coord <- generateCoord dir
+  createEnemy tp dir coord
 
-generateCoord :: Direction -> Coord
+generateCoord :: Direction -> IO Coord
 generateCoord Up = do
   coord1 <- randomInt 0 gridWidth
-  (V2 coord1 0)
+  return (V2 coord1 0)
 generateCoord Dn = do
   coord1 <- randomInt 0 gridWidth
-  (V2 coord1 gridHeight)
+  return (V2 coord1 gridHeight)
 generateCoord Lft = do
   coord1 <- randomInt 0 gridHeight
-  (V2 0 coord1)
+  return (V2 0 coord1)
 generateCoord Rt = do
   coord1 <- randomInt 0 gridHeight
-  (V2 gridWidth coord1)
+  return (V2 gridWidth coord1)
 
-createEnemy :: EnemyType -> Direction -> Coord -> EnemyPlane
+createEnemy :: EnemyType -> Direction -> Coord -> IO EnemyPlane
 createEnemy Fighter dir coord = do
   id <- randomInt 0 1
-  Enemy {
+  return Enemy {
     _coords = [coord, (coord - (V2 1 0)), (coord + (V2 1 0)), (coord + (V2 0 1)), (coord - (V2 0 1))],
     _coordTurret = coord,
     _price = 100,
@@ -144,7 +145,7 @@ createEnemy Fighter dir coord = do
   }
 createEnemy Bomber dir coord = do
   id <- randomInt 1 2
-  Enemy {
+  return Enemy {
     _coords = [coord, (coord - (V2 0 1)), (coord + (V2 0 1)), (coord - (V2 1 0)), (coord + (V2 0 2)), (coord - (V2 0 2)), (coord + (V2 1 2)), (coord + (V2 (-1) 2)), (coord + (V2 1 (-2))), (coord + (V2 (-1) (-2)))],
     _coordTurret = coord,
     _price = 400,
@@ -158,7 +159,7 @@ createEnemy Bomber dir coord = do
 createEnemy Starship dir coord = do
   id1 <- randomInt 2 8
   id2 <- randomInt 1 2
-  Enemy {
+  return Enemy {
     _coords = (createStarShipCoord coord 1),
     _coordTurret = coord,
     _price = 1500,
@@ -167,14 +168,14 @@ createEnemy Starship dir coord = do
     _enemyFireRate = 10,
     _fireMode = (firePool!!id1),
     _moveMode = case dir of
-      Dn -> id2
-      otherwise -> 1,
+      Dn -> movePool!!id2
+      otherwise -> movePool!!1,
     _direction = dir
   }
 
 createEnemy Turrent dir coord = do
   id1 <- randomInt 2 8
-  Enemy {
+  return Enemy {
     _coords = [(coord - (V2 1 0)), (coord + (V2 1 0)), (coord + (V2 0 1)), (coord - (V2 0 1)), (coord - (V2 1 1)), (coord + (V2 1 1)), (coord + (V2 1 (-1))), (coord - (V2 1 (-1)))],
     _coordTurret = coord,
     _price = 200,
@@ -244,7 +245,7 @@ moveEnemy' Move dir enemy = (enemy & coords %~ (onMove' dir)) & coordTurret %~ (
 moveEnemy' TurrentMove dir enemy = turrentMove (enemy^.coordTurret) dir enemy
 
 turrentMove :: Coord -> Direction -> EnemyPlane -> EnemyPlane
-turrentMove (V2 a1 a2) dir enemy = if (a2 > (gridHeight * 4 / 5))
+turrentMove (V2 a1 a2) dir enemy = if (a2 > (gridHeight * 4 `div` 5))
   then (enemy & coords %~ (onMove' dir)) & coordTurret %~ (onMove'' dir)
   else enemy
 
