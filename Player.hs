@@ -107,11 +107,11 @@ generateEnemy = do
 
 generateEnemy' :: EnemyType -> IO EnemyPlane
 generateEnemy' Turrent = do
-  coord1 <- randomInt 0 gridWidth
-  createEnemy Turrent Dn (V2 coord1 gridHeight)
+  coord1 <- randomInt 0 (gridWidth - 1)
+  createEnemy Turrent Dn (V2 coord1 (gridHeight - 1))
 generateEnemy' Starship = do
-  coord1 <- randomInt 0 gridWidth
-  createEnemy Starship Dn (V2 coord1 gridHeight)
+  coord1 <- randomInt 0 (gridWidth - 1)
+  createEnemy Starship Dn (V2 coord1 (gridHeight - 1))
 generateEnemy' tp = do
   ele <- randomInt 0 3
   --dir <- elements moveDirPool
@@ -121,17 +121,17 @@ generateEnemy' tp = do
 
 generateCoord :: Direction -> IO Coord
 generateCoord Up = do
-  coord1 <- randomInt 0 gridWidth
+  coord1 <- randomInt 0 (gridWidth - 1)
   return (V2 coord1 0)
 generateCoord Dn = do
-  coord1 <- randomInt 0 gridWidth
-  return (V2 coord1 gridHeight)
+  coord1 <- randomInt 0 (gridWidth - 1)
+  return (V2 coord1 (gridHeight - 1))
 generateCoord Lft = do
-  coord1 <- randomInt 0 gridHeight
+  coord1 <- randomInt 0 (gridHeight - 1)
   return (V2 0 coord1)
 generateCoord Rt = do
-  coord1 <- randomInt 0 gridHeight
-  return (V2 gridWidth coord1)
+  coord1 <- randomInt 0 (gridHeight - 1)
+  return (V2 (gridWidth - 1) coord1)
 
 createEnemy :: EnemyType -> Direction -> Coord -> IO EnemyPlane
 createEnemy Fighter dir coord = do
