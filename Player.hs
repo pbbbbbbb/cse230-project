@@ -100,8 +100,8 @@ generatePlayer = Player {
 isPlayerAlive :: PlayerPlane -> Bool
 isPlayerAlive p = (p ^. playerHealth <= 0) || (not (p ^.alive))
 
-isPlayerAlive :: EnemyPlane -> Bool
-isPlayerAlive e = (e ^. enemyHealth <= 0) || (not (e ^. killed))
+isEnemyAlive :: EnemyPlane -> Bool
+isEnemyAlive e = (e ^. enemyHealth <= 0) || (not (e ^. killed))
 
 generateEnemy :: IO EnemyPlane
 generateEnemy = do
