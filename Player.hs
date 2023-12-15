@@ -81,6 +81,9 @@ generatePlayer = do
     _playerFire = Cannon
   }
 
+isPlayerAlive :: PlayerPlane -> Bool
+isPlayerAlive p = (p ^. playerHealth <= 0) || (not (p ^.alive))
+
 generateEnemy :: EnemyType -> EnemyPlane
 generateEnemy Turrent = do
   coord1 <- chooseInt(0 , gridWidth)
@@ -205,6 +208,9 @@ movePlayer :: Direction -> PlayerPlane -> PlayerPlane
 movePlayer dir p = if (outOfBoundary (onMove'' dir (p^.coord)))
   then p
   else p & coord %~ (onMove'' dir)
+
+outOfBoundary :: Coord -> Bool
+outOfBoundary coord = (coord ^. _2 > gridHeight) || (coord ^. _2 < 0) || (coord ^. _1 > gridWidth) || (coord ^. _1 < 0)
 
 moveEnemy :: EnemyPlane -> EnemyPlane
 moveEnemy enemy = moveEnemy' (enemy^.moveMode) (enemy^.direction) enemy
