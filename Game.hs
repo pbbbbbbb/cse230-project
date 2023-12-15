@@ -25,7 +25,7 @@ data Game = Game {
   playerBullets :: [PlayerBullet],
   enemyBullets  :: [EnemyBullet],
   timer         :: Time,
-  paused        :: Bool
+  paused        :: Bool,
   gameOver      :: Bool
 } deriving (Show)
 
@@ -42,23 +42,24 @@ initGame = Game {
 
 tick :: Game -> IO Game
 tick g
-  | isOver g = setGameOver g
-  |otherwise = do e' <- updateEnemies g
+  | isOver g = return (setGameOver g)
+  | otherwise = do { e' <- updateEnemies g;
                   return Game {
                     player  = updatePlayer g,
                     enemies = e',
                     playerBullets = updatePlayerBullet g,
                     enemyBullets  = updateEnemyBullet g,
                     timer   = updateTimer g,
-                    paused = False
-                  }
+                    paused = False,
+                    gameOver = False
+                  }}
 
 isOver :: Game -> Bool
 isOver g = isPlayerAlive (player g)
 
 setGameOver :: Game -> Game
 setGameOver g = Game {
-    player = (player g)
+    player = (player g),
     enemies = (enemies g),
     playerBullets = (playerBullets g),
     enemyBullets  = (enemyBullets g),
@@ -207,7 +208,7 @@ updateTimer Game { timer = t } = t + 1
 movePlayerSingleStep :: Direction -> Game -> Game
 movePlayerSingleStep dir game =
   case game of
-    GameOver -> GameOver
+    -- GameOver -> GameOver
     Game { player = p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, paused = ps } ->
       if paused game then game
-      else Game { player = movePlayer dir p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, paused = ps }
+      else Game { player = movePlayer dir p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, paused = ps, gameOver = False}
