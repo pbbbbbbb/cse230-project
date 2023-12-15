@@ -100,14 +100,19 @@ generatePlayer = Player {
 isPlayerAlive :: PlayerPlane -> Bool
 isPlayerAlive p = (p ^. playerHealth <= 0) || (not (p ^.alive))
 
-generateEnemy :: EnemyType -> IO EnemyPlane
-generateEnemy Turrent = do
+generateEnemy :: IO EnemyPlane
+generateEnemy = do
+  tp <- randomInt 0 3
+  generateEnemy' (enemyPool !! tp)
+
+generateEnemy' :: EnemyType -> IO EnemyPlane
+generateEnemy' Turrent = do
   coord1 <- randomInt 0 gridWidth
   createEnemy Turrent Dn (V2 coord1 gridHeight)
-generateEnemy Starship = do
+generateEnemy' Starship = do
   coord1 <- randomInt 0 gridWidth
   createEnemy Starship Dn (V2 coord1 gridHeight)
-generateEnemy tp = do
+generateEnemy' tp = do
   ele <- randomInt 0 3
   --dir <- elements moveDirPool
   let dir = moveDirPool!!ele
