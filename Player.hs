@@ -93,7 +93,7 @@ generatePlayer = Player {
     _score = 0,
     _playerHealth = 10,
     _alive = True,
-    _playerFireRate = 2,
+    _playerFireRate = 1,
     _playerFire = Cannon
   }
 
@@ -152,7 +152,7 @@ createEnemy Bomber dir coord = do
   return Enemy {
     _coords = [coord, (coord - (V2 1 0)), (coord + (V2 1 0)), (coord + (V2 2 0)), (coord - (V2 2 0)), (coord + (V2 2 1)), (coord + (V2 2 (-1))), (coord + (V2 (-2) 1)), (coord + (V2 (-2) (-1)))],
     _coordTurret = coord,
-    _price = 400,
+    _price = 500,
     _enemyHealth = 4,
     _killed = True,
     _enemyFireRate = 3,
