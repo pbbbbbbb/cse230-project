@@ -56,6 +56,7 @@ import Player
     gridWidth,
     playerHealth,
     score,
+    generatePlayerCoords
   )
 
 data Cell
@@ -77,11 +78,10 @@ app =
     }
 
 drawUI :: Game -> [Widget Name]
-drawUI g = [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
-
--- if g ^. paused
---   then [C.center (padRight (Pad 2) (drawStats g <+> drawPauseScreen))]
---   else [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
+drawUI g = if paused g
+  then [C.center (padRight (Pad 2) (drawStats g <+> drawPauseScreen))]
+  else [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
+-- drawUI g = [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
 
 drawPauseScreen :: Widget Name
 drawPauseScreen =
@@ -186,10 +186,10 @@ drawGrid g =
     cellsInRow y = [drawCoord (V2 x y) | x <- [0 .. gridWidth - 1]]
     drawCoord = drawCell . cellAt
     cellAt c
-      | c == (player g ^. coord) = Player
+      | c `elem` (generatePlayerCoords $player g ^. coord) = Player
       | any (\b -> c `elem` (b ^. coords)) (enemies g) = Enemy
-      | any (\b -> c == (b ^. coordBullet)) (playerBullets g) = PlayerBullet
       | any (\b -> c == (b ^. coordEnemy)) (enemyBullets g) = EnemyBullet
+      | any (\b -> c == (b ^. coordBullet)) (playerBullets g) = PlayerBullet
       | otherwise = Empty
 
 drawCell :: Cell -> Widget Name
@@ -221,24 +221,24 @@ space :: Widget Name
 space = str " "
 
 playerCell :: Widget Name
-playerCell = str "*"
+playerCell = str "█"
 
 enemyCell :: Widget Name
 enemyCell = str "█"
 
 playerBulletCell :: Widget Name
-playerBulletCell = str "@"
+playerBulletCell = str "*"
 
 enemyBulletCell :: Widget Name
-enemyBulletCell = str "="
+enemyBulletCell = str "*"
 
 theMap :: AttrMap
 theMap =
   attrMap
     V.defAttr
-    [ (playerAttr, V.white `on` V.white),
+    [ (playerAttr, V.yellow `on` V.white),
       (enemyAttr, fg V.white `V.withStyle` V.bold),
-      (playerBulletAttr, fg V.blue `V.withStyle` V.bold),
+      (playerBulletAttr, fg V.green `V.withStyle` V.bold),
       (enemyBulletAttr, fg V.red `V.withStyle` V.bold),
       (gameOverAttr, fg V.red `V.withStyle` V.bold)
     ]

@@ -5,16 +5,7 @@ import Control.Lens ((%~), (&), (.~), (^.))
 import Control.Monad.IO.Class (liftIO)
 import qualified Graphics.Vty as V
 import Linear (V2 (V2))
--- import Shaft
---   ( Game (..),
---     Movement (Down, Left, Right, Up),
---     Name (..),
---     Tick (..),
---     initState,
---     movePlayerSingleStep,
---     paused,
---     step,
---   )
+
 
 import Game
 
