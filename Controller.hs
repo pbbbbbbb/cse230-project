@@ -14,8 +14,8 @@ import Player
 import Prelude hiding (Left, Right)
 
 handleEvent :: Game -> BrickEvent Name Tick -> EventM Name (Next Game)
--- handleEvent g (VtyEvent (V.EvKey (V.KChar 'p') [])) =
---   continue $ g & paused %~ not
+handleEvent g (VtyEvent (V.EvKey (V.KChar 'p') [])) =
+  continue $ setPause g
 handleEvent g (AppEvent Tick)
   | not (isPaused g) = liftIO (tick g) >>= continue
 handleEvent g (VtyEvent (V.EvKey (V.KChar 'w') []))

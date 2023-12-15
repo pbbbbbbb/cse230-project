@@ -14,7 +14,7 @@ data Tick
   = Tick
 
 enemyGenerateRate :: Int
-enemyGenerateRate = 50
+enemyGenerateRate = 25
 
 bulletGenerateRate :: Int
 bulletGenerateRate = 5
@@ -70,6 +70,17 @@ setGameOver g = Game {
     timer = (timer g),
     paused = (paused g),
     gameOver = True
+  }
+
+setPause :: Game -> Game
+setPause g = Game {
+    player = (player g),
+    enemies = (enemies g),
+    playerBullets = (playerBullets g),
+    enemyBullets  = (enemyBullets g),
+    timer = (timer g),
+    paused = not (paused g),
+    gameOver = gameOver g
   }
 
 updatePlayer :: Game -> PlayerPlane
