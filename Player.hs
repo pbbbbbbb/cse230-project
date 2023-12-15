@@ -87,9 +87,8 @@ makeLenses ''EnemyPlane
 makeLenses ''PlayerBullet
 makeLenses ''EnemyBullet
 
-generatePlayer :: IO PlayerPlane
-generatePlayer = do
-  return Player {
+generatePlayer :: PlayerPlane
+generatePlayer = Player {
     _coord = (V2 (gridWidth `div` 2) 1),
     _score = 0,
     _playerHealth = 10,
