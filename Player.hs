@@ -93,7 +93,7 @@ generatePlayer = Player {
     _score = 0,
     _playerHealth = 10,
     _alive = True,
-    _playerFireRate = 3,
+    _playerFireRate = 1,
     _playerFire = Cannon
   }
 
@@ -142,7 +142,7 @@ createEnemy Fighter dir coord = do
     _price = 100,
     _enemyHealth = 1,
     _killed = True,
-    _enemyFireRate = 10,
+    _enemyFireRate = 3,
     _fireMode = (firePool!!id),
     _moveMode = (movePool!!id),
     _direction = dir
@@ -150,12 +150,12 @@ createEnemy Fighter dir coord = do
 createEnemy Bomber dir coord = do
   id <- randomInt 1 2
   return Enemy {
-    _coords = [coord, (coord - (V2 0 1)), (coord + (V2 0 1)), (coord - (V2 1 0)), (coord + (V2 0 2)), (coord - (V2 0 2)), (coord + (V2 1 2)), (coord + (V2 (-1) 2)), (coord + (V2 1 (-2))), (coord + (V2 (-1) (-2)))],
+    _coords = [coord, (coord - (V2 1 0)), (coord + (V2 1 0)), (coord - (V2 0 1)), (coord + (V2 2 0)), (coord - (V2 2 0)), (coord + (V2 2 1)), (coord + (V2 2 (-1))), (coord + (V2 (-2) 1)), (coord + (V2 (-2) (-1)))],
     _coordTurret = coord,
     _price = 400,
     _enemyHealth = 4,
     _killed = True,
-    _enemyFireRate = 10,
+    _enemyFireRate = 3,
     _fireMode = (firePool!!id),
     _moveMode = Move,
     _direction = dir
@@ -169,7 +169,7 @@ createEnemy Starship dir coord = do
     _price = 1500,
     _enemyHealth = 15,
     _killed = True,
-    _enemyFireRate = 10,
+    _enemyFireRate = 3,
     _fireMode = (firePool!!id1),
     _moveMode = case dir of
       Dn -> movePool!!id2
@@ -197,8 +197,8 @@ generateCoordsRt coord 0 = []
 generateCoordsRt coord n = coord : (generateCoordsRt (coord + (V2 0 1)) (n - 1))
 createStarShipCoord :: Coord -> Int -> [Coord]
 createStarShipCoord coord 6 = generateCoordsRt coord 5
-createStarShipCoord coord 5 = (generateCoordsRt coord 3) ++ (generateCoordsRt (coord + (V2 0 6)) 3) ++ (createStarShipCoord (coord + (V2 1 2)) (5 + 1))
-createStarShipCoord coord n = generateCoordsRt coord ((2 * n) - 1) ++ (createStarShipCoord (coord + (V2 1 (-1))) (n + 1))
+createStarShipCoord coord 5 = (generateCoordsRt coord 3) ++ (generateCoordsRt (coord + (V2 6 0)) 3) ++ (createStarShipCoord (coord + (V2 1 1)) (5 + 1))
+createStarShipCoord coord n = generateCoordsRt coord ((2 * n) - 1) ++ (createStarShipCoord (coord + (V2 (-1) 1)) (n + 1))
 --HitBehaviors
 --on... is the final step
 

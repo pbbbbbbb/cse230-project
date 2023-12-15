@@ -40,16 +40,17 @@ initGame = Game {
 
 tick :: Game -> IO Game
 tick GameOver = return GameOver
-tick g = do
-  e' <- updateEnemies g
-  return Game {
-          player  = updatePlayer g,
-          enemies = e',
-          playerBullets = updatePlayerBullet g,
-          enemyBullets  = updateEnemyBullet g,
-          timer   = updateTimer g,
-          paused = False
-        }
+tick g
+  | isOver g = GameOver
+  |otherwise = do e' <- updateEnemies g
+                  return Game {
+                    player  = updatePlayer g,
+                    enemies = e',
+                    playerBullets = updatePlayerBullet g,
+                    enemyBullets  = updateEnemyBullet g,
+                    timer   = updateTimer g,
+                    paused = False
+                  }
 
 -- tick :: Game -> Game
 -- tick = evalState updateGame
