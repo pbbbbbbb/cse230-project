@@ -11,7 +11,7 @@
 {-# LANGUAGE DataKinds #-}
 module Player where
 import Data.Monoid
-
+import System.Random (Random (..), newStdGen, randomRs)
 import Control.Lens (makeLenses, (%~), (&), (.~), (^.), _1, _2)
 import Linear.V2 (V2 (..))
 import qualified Data.Sequence as SEQ
@@ -82,8 +82,7 @@ makeLenses ''PlayerBullet
 makeLenses ''EnemyBullet
 
 generatePlayer :: PlayerPlane
-generatePlayer = do
-  return Player {
+generatePlayer =  Player {
     _coord = (V2 (gridWidth `div` 2) 1),
     _score = 0,
     _playerHealth = 10,
@@ -100,31 +99,31 @@ generateEnemy Turrent = do
   coord1 <- chooseInt(0 , gridWidth)
   createEnemy Turrent Dn (V2 coord1 gridHeight)
 generateEnemy Starship = do
-  coord1 <- chooseInt (0, gridWidth)
+  coord1 <- chooseInt(0 , gridWidth)
   createEnemy Starship Dn (V2 coord1 gridHeight)
 generateEnemy tp = do
   dir <- elements moveDirPool
-  coord <- generateCoord dir
-  createEnemy tp dir coord
+  --coord = generateCoord dir
+  createEnemy tp dir (generateCoord dir)
 
-generateCoord :: Direction -> Gen Coord
+generateCoord :: Direction -> Coord
 generateCoord Up = do
-  coord1 <- chooseInt (0, gridWidth)
-  return (V2 coord1 0)
+  coord1 <- chooseInt(0, gridWidth)
+  (V2 coord1 0)
 generateCoord Dn = do
-  coord1 <- chooseInt (0, gridWidth)
-  return (V2 coord1 gridHeight)
+  coord1 <- chooseInt(0, gridWidth)
+  (V2 coord1 gridHeight)
 generateCoord Lft = do
-  coord1 <- chooseInt (0, gridHeight)
-  return (V2 0 coord1)
+  coord1 <- chooseInt(0, gridHeight)
+  (V2 0 coord1)
 generateCoord Rt = do
-  coord1 <- chooseInt (0, gridHeight)
-  return (V2 gridWidth coord1)
+  coord1 <- chooseInt(0, gridHeight)
+  (V2 gridWidth coord1)
 
 createEnemy :: EnemyType -> Direction -> Coord -> EnemyPlane
 createEnemy Fighter dir coord = do
   id <- chooseInt (0, 1)
-  return Enemy {
+  Enemy {
     _coords = [coord, (coord - (V2 1 0)), (coord + (V2 1 0)), (coord + (V2 0 1)), (coord - (V2 0 1))],
     _coordTurret = coord,
     _price = 100,
@@ -137,7 +136,7 @@ createEnemy Fighter dir coord = do
   }
 createEnemy Bomber dir coord = do
   id <- chooseInt (1, 2)
-  return Enemy {
+  Enemy {
     _coords = [coord, (coord - (V2 0 1)), (coord + (V2 0 1)), (coord - (V2 1 0)), (coord + (V2 0 2)), (coord - (V2 0 2)), (coord + (V2 1 2)), (coord + (V2 (-1) 2)), (coord + (V2 1 (-2))), (coord + (V2 (-1) (-2)))],
     _coordTurret = coord,
     _price = 400,
@@ -151,7 +150,7 @@ createEnemy Bomber dir coord = do
 createEnemy Starship dir coord = do
   id1 <- chooseInt (2, 8)
   id2 <- chooseInt (1, 2)
-  return Enemy {
+  Enemy {
     _coords = (createStarShipCoord coord 1),
     _coordTurret = coord,
     _price = 1500,
@@ -167,7 +166,7 @@ createEnemy Starship dir coord = do
 
 createEnemy Turrent dir coord = do
   id1 <- chooseInt (2, 8)
-  return Enemy {
+  Enemy {
     _coords = [(coord - (V2 1 0)), (coord + (V2 1 0)), (coord + (V2 0 1)), (coord - (V2 0 1)), (coord - (V2 1 1)), (coord + (V2 1 1)), (coord + (V2 1 (-1))), (coord - (V2 1 (-1)))],
     _coordTurret = coord,
     _price = 200,
@@ -185,7 +184,7 @@ generateCorrdsRt coord n = coord:(generateCoordsRt (coord + (V2 0 1)) (n - 1))
 createStarShipCoord :: Coord -> Int -> [Coord]
 createStarShipCoord coord 6 = generateCoordsRt coord 5
 createStarShipCoord coord 5 = (generateCoordsRt coord 3) ++ (generateCoordsRt (coord + (V2 0 6)) 3) ++ (createStarShipCoord (coord + (V2 1 2)) (5 + 1))
-createStarShipCoord coord n = generateCoordsRt coord ((2 * n) - 1) ++ (createStarShipCoord (coord + (V2 1 -1)) (n + 1))
+createStarShipCoord coord n = generateCoordsRt coord ((2 * n) - 1) ++ (createStarShipCoord (coord + (V2 1 (-1))) (n + 1))
 --HitBehaviors
 --on... is the final step
 
@@ -199,7 +198,7 @@ onBulletCrash player enemy = if (bulletCrash player enemy)
   then ((player & playerHealth %~ (+ (- 1))), (enemy & hit .~ False))
   else (player, enemy)
 
-onBulletHit :: PlayerBullet -> EnemyPlane -> Bool
+onBulletHit :: PlayerBullet -> EnemyPlane -> (PlayerBullet, EnemyPlane)
 onBulletHit player enemy = if (bulletHit player enemy)
     then ((player & exist .~ False), (enemy & enemyHealth %~ (+ (- 1))))
     else (player, enemy)
@@ -227,10 +226,10 @@ moveEnemy :: EnemyPlane -> EnemyPlane
 moveEnemy enemy = moveEnemy' (enemy^.moveMode) (enemy^.direction) enemy
 
 movePlayerBullet :: PlayerBullet -> PlayerBullet
-movePlayerBullet p = p & coordBullet %~ (onMove'' p^.playerDirection)
+movePlayerBullet p = p & coordBullet %~ (onMove'' (p^.playerDirection))
 
 moveEnemyBullet :: EnemyBullet -> EnemyBullet
-moveEnemyBullet e = e & coordEnemy %~ (onMove'' e^.enemyDirection)
+moveEnemyBullet e = e & coordEnemy %~ (onMove'' (e^.enemyDirection))
 
 moveEnemy' :: MoveMode -> Direction -> EnemyPlane -> EnemyPlane
 moveEnemy' Move dir enemy = (enemy & coords %~ (onMove' dir)) & coordTurret %~ (onMove'' dir)
@@ -257,16 +256,14 @@ onMove'' _ coord = coord
 
 --Shooting creation
 createEnemyBullet :: Coord -> Direction -> EnemyBullet
-createEnemyBullet coord direction = do
-  return EnemyBullet {
+createEnemyBullet coord direction = EnemyBullet {
     _coordEnemy = coord,
     _enemyDirection = direction,
     _hit= True
   }
 
 createMyBullet :: Coord -> Direction -> PlayerBullet
-createMyBullet coord direction = do
-  return MyBullet {
+createMyBullet coord direction = MyBullet {
     _coordBullet = coord,
     _playerDirection = direction,
     _exist = True
