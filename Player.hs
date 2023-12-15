@@ -263,6 +263,17 @@ onMove'' DR coord = coord + (V2 1 (-1))
 onMove'' _ coord = coord
 
 --Shooting creation
+-- ...Shoot is the final
+myBulletShoot :: PlayerPlane -> Time -> [PlayerBullet]
+myBulletShoot player t =
+  if (t `mod` (player ^. playerFireRate)) == 0
+    then myBulletGenerate (player ^. playerFire) (player ^. coord)
+    else []
+
+enemyBulletShoot :: EnemyPlane -> Time -> [EnemyBullet]
+enemyBulletShoot enemy t = enemyBulletShoot' (enemy ^. fireMode) (enemy ^. coordTurret) (enemy ^. enemyFireRate) t
+
+
 createEnemyBullet :: Coord -> Direction -> EnemyBullet
 createEnemyBullet coord direction = EnemyBullet {
     _coordEnemy = coord,
@@ -277,8 +288,6 @@ createMyBullet coord direction = MyBullet {
     _exist = True
   }
 
-enemyBulletShoot :: EnemyPlane -> Time -> [EnemyBullet]
-enemyBulletShoot enemy t = enemyBulletShoot' (enemy ^.fireMode) (enemy ^.coordTurret) (enemy^.enemyFireRate) t
 
 enemyBulletShoot' :: FireMode -> Coord -> Int -> Time -> [EnemyBullet]
 enemyBulletShoot' LazerDown turrent rate t = if (t `mod` (2 * rate)) < rate
@@ -305,11 +314,6 @@ enemyBulletGenerate LazerCorner turrent = [(createEnemyBullet turrent DL), (crea
 enemyBulletGenerate LazerCross turrent = [(createEnemyBullet turrent Dn), (createEnemyBullet turrent Up), (createEnemyBullet turrent Lft), (createEnemyBullet turrent Rt)]
 enemyBulletGenerate _ _ = []
 
-myBulletShoot :: PlayerPlane -> Time -> [PlayerBullet]
-myBulletShoot player t =
-  if (t `mod` (player^.playerFireRate)) == 0
-    then myBulletGenerate (player^.playerFire) (player^.coord)
-    else []
 myBulletGenerate :: PlayerFire -> Coord -> [PlayerBullet]
 myBulletGenerate Cannon turrent = [createMyBullet turrent Up]
 myBulletGenerate Shotgun turrent = [createMyBullet turrent Up, createMyBullet turrent UL, createMyBullet turrent UR]
