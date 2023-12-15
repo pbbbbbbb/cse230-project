@@ -14,7 +14,7 @@ data Tick
   = Tick
 
 enemyGenerateRate :: Int
-enemyGenerateRate = 50
+enemyGenerateRate = 25
 
 bulletGenerateRate :: Int
 bulletGenerateRate = 5
@@ -25,9 +25,17 @@ data Game = Game {
   playerBullets :: [PlayerBullet],
   enemyBullets  :: [EnemyBullet],
   timer         :: Time,
+  mode          :: Mode,
   paused        :: Bool,
   gameOver      :: Bool
 } deriving (Show)
+
+data Mode
+  = Easy
+  | Medium
+  | Hard
+  | Insane
+  deriving (Eq, Show)
 
 initGame :: Game
 initGame = Game {
@@ -36,6 +44,7 @@ initGame = Game {
   playerBullets = [],
   enemyBullets  = [],
   timer = 0,
+  mode = Easy,
   paused = False,
   gameOver = False
 }
@@ -51,9 +60,26 @@ tick g
                     playerBullets = updatePlayerBullet g,
                     enemyBullets  = updateEnemyBullet g,
                     timer   = updateTimer g,
+                    mode    = changeMode g,
                     paused = False,
                     gameOver = False
                   }
+
+addScore :: PlayerPlane -> Int -> PlayerPlane
+addScore p sc = p & score %~ (+ sc)
+
+changeMode :: Game -> Mode
+changeMode g
+  | (timer g) >= 600 = Insane
+  | (timer g) >= 400 = Hard
+  | (timer g) >= 200 = Medium
+  | otherwise = Easy
+
+getEnemyGenerateRate :: Mode -> Int
+getEnemyGenerateRate Easy = 40
+getEnemyGenerateRate Medium = 30
+getEnemyGenerateRate Hard = 20
+getEnemyGenerateRate Insane = 15
 
 isPaused :: Game -> Bool
 isPaused g = paused g || gameOver g
@@ -68,12 +94,22 @@ setGameOver g = Game {
     playerBullets = (playerBullets g),
     enemyBullets  = (enemyBullets g),
     timer = (timer g),
+    mode = (mode g),
     paused = (paused g),
     gameOver = True
   }
 
-addScore :: PlayerPlane -> Int -> PlayerPlane
-addScore p sc = p & _score %~ (+ sc)
+setPause :: Game -> Game
+setPause g = Game {
+    player = (player g),
+    enemies = (enemies g),
+    playerBullets = (playerBullets g),
+    enemyBullets  = (enemyBullets g),
+    timer = (timer g),
+    mode = (mode g),
+    paused = not (paused g),
+    gameOver = gameOver g
+  }
 
 updatePlayer :: Game -> PlayerPlane
 updatePlayer Game{ player = p, enemies = e, enemyBullets = eb } = checkBulletCrash (checkEnemyCrash p e) eb
@@ -93,24 +129,29 @@ checkBulletCrash p (b:bs) =
     else checkBulletCrash p bs
 
 updateEnemies :: Game -> IO ([EnemyPlane], Int)
-updateEnemies Game{ player = p, enemies = e, playerBullets = pb, timer = t }
-  = updateEnemyList p e pb t
+updateEnemies Game{ player = p, enemies = e, playerBullets = pb, timer = t, mode = md}
+  = updateEnemyList (getEnemyGenerateRate md) p e pb t
 
-updateEnemyList :: PlayerPlane -> [EnemyPlane] -> [PlayerBullet] -> Time -> IO ([EnemyPlane], Int)
-updateEnemyList _ [] _ t
-  | t `mod` enemyGenerateRate == 0 = do { e' <- generateEnemy; return ([e'], 0)}
+updateEnemyList :: Int -> PlayerPlane -> [EnemyPlane] -> [PlayerBullet] -> Time -> IO ([EnemyPlane], Int)
+updateEnemyList egr _ [] _ t
+  | t `mod` egr == 0 = do { e' <- generateEnemy; return ([e'], 0)}
   | otherwise = return ([], 0)
-updateEnemyList p (e:es) pb t
-  | t `mod` enemyGenerateRate == 0 =
-      do e'  <- generateEnemy
-         (es', sc) <- updateEnemyList p es pb t
-         return (if isEnemyAlive e && inBoundary e
-                    then (e' : (updateEnemy p e pb t : es'), sc)
-                    else (e' : es', sc + (if isEnemyAlive e then 0 else (_price e))))
-  | otherwise = do (es', sc) <- updateEnemyList p es pb t
-                   return (if isEnemyAlive e && inBoundary e
-                              then (updateEnemy p e pb t : es', sc)
-                              else (es', sc + (if isEnemyAlive e then 0 else (_price e))))
+-- updateEnemyList egr p (e:es) pb t
+--   | t `mod` egr == 0 =
+--       do e'  <- generateEnemy
+--          (es', sc) <- updateEnemyList egr p es pb t
+--          return (if isEnemyAlive e && inBoundary e
+--                     then (e' : (updateEnemy p e pb t : es'), sc)
+--                     else (e' : es', sc + (if isEnemyAlive e then 0 else (_price e))))
+--   | otherwise = do (es', sc) <- updateEnemyList egr p es pb t
+--                    return (if isEnemyAlive e && inBoundary e
+--                               then (updateEnemy p e pb t : es', sc)
+--                               else (es', sc + (if isEnemyAlive e then 0 else (_price e))))
+updateEnemyList egr p (e:es) pb t = do
+                                      (es', sc) <- updateEnemyList egr p es pb t
+                                      return (if isEnemyAlive e && inBoundary e
+                                            then (updateEnemy p e pb t : es', sc)
+                                            else (es', sc + (if isEnemyAlive e then 0 else (_price e))))
 
 isEnemyAlive :: EnemyPlane -> Bool
 isEnemyAlive e = (_killed e) && ((_enemyHealth e) > 0)
@@ -170,6 +211,6 @@ updateTimer Game { timer = t } = t + 1
 movePlayerSingleStep :: Direction -> Game -> Game
 movePlayerSingleStep dir game =
   case game of
-    Game { player = p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, paused = ps } ->
+    Game { player = p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, mode = md, paused = ps } ->
       if paused game then game
-      else Game { player = movePlayer dir p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, paused = ps, gameOver = False}
+      else Game { player = movePlayer dir p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, mode = md, paused = ps, gameOver = False}

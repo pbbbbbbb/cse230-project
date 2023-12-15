@@ -106,6 +106,7 @@ drawStats g =
         [ padTop (Pad 1) (drawScore1 (player g ^. score)),
           -- padTop (Pad 1) (drawScore2 (g ^. score)),
           padTop (Pad 1) (drawHealth1 (player g ^. playerHealth)),
+          padTop (Pad 1) (drawMode (mode g)),
           padTop (Pad 1) (drawTimer (timer g)),
           -- padTop (Pad 1) (drawHealth2 (g ^. health)),
           drawGameOver $ gameOver g
@@ -115,7 +116,7 @@ drawStats g =
 drawTimer :: Time -> Widget Name
 drawTimer s =
   withBorderStyle BS.unicodeRounded $
-    B.borderWithLabel (str " Timer ") $
+    B.borderWithLabel (str " Time ") $
       C.hCenter $
         padAll 1 $
           str (show s)
@@ -123,7 +124,7 @@ drawTimer s =
 drawScore1 :: Int -> Widget Name
 drawScore1 s =
   withBorderStyle BS.unicodeRounded $
-    B.borderWithLabel (str " Player 1's Score") $
+    B.borderWithLabel (str " Score ") $
       C.hCenter $
         padAll 1 $
           str (show s)
@@ -139,7 +140,7 @@ drawScore1 s =
 drawHealth1 :: Int -> Widget Name
 drawHealth1 s =
   withBorderStyle BS.unicodeRounded $
-    B.borderWithLabel (str " Player 1's Health ") $
+    B.borderWithLabel (str " Health ") $
       C.hCenter $
         padAll 1 $
           str (show s)
@@ -152,13 +153,13 @@ drawHealth1 s =
 --         padAll 1 $
 --           str (show s)
 
--- drawMode :: Mode -> Widget Name
--- drawMode s =
---   withBorderStyle BS.unicodeRounded $
---     B.borderWithLabel (str " Mode ") $
---       C.hCenter $
---         padAll 1 $
---           str (show s)
+drawMode :: Mode -> Widget Name
+drawMode s =
+  withBorderStyle BS.unicodeRounded $
+    B.borderWithLabel (str " Difficulty ") $
+      C.hCenter $
+        padAll 1 $
+          str (show s)
 
 drawGameOver :: Bool -> Widget Name
 drawGameOver True = withAttr gameOverAttr $ C.hCenter $ str "Game Over"
@@ -170,7 +171,7 @@ gameInit = do
   forkIO $
     forever $ do
       BChan.writeBChan channel Tick
-      threadDelay 400000
+      threadDelay 120000
   let state = initGame
   let builder = V.mkVty V.defaultConfig
   initialVty <- builder
