@@ -5,8 +5,16 @@ import Bullet
 import Player
 import Control.Monad.State
 import GHC.IO.Exception (IOErrorType(TimeExpired))
+import Control.Lens (makeLenses, (%~), (&), (.~), (^.), _1, _2)
+import Data.Maybe (fromMaybe)
+
 -- im
 -- type Time = Int
+
+type Name = ()
+
+data Tick
+  = Tick
 
 enemyGenerateRate :: Int
 enemyGenerateRate = 100
@@ -16,7 +24,8 @@ data Game = Game {
   enemies       :: [EnemyPlane],
   playerBullets :: [PlayerBullet],
   enemyBullets  :: [EnemyBullet],
-  timer         :: Time
+  timer         :: Time,
+  paused        :: Bool
 } | GameOver deriving (Show)
 
 initGame :: Game
@@ -25,7 +34,8 @@ initGame = Game {
   enemies       = [],
   playerBullets = [],
   enemyBullets  = [],
-  timer = 0
+  timer = 0,
+  paused = False
 }
 
 tick :: Game -> IO Game
@@ -37,7 +47,8 @@ tick g = do
           enemies = e',
           playerBullets = updatePlayerBullet g,
           enemyBullets  = updateEnemyBullet g,
-          timer   = updateTimer g
+          timer   = updateTimer g,
+          paused = False
         }
 
 -- tick :: Game -> Game
@@ -68,7 +79,7 @@ updatePlayer Game{ player = p, enemies = e, enemyBullets = eb } = checkBulletCra
 checkEnemyCrash :: PlayerPlane -> [EnemyPlane] -> PlayerPlane
 checkEnemyCrash p []     = p
 checkEnemyCrash p (e:es) =
-  if enemyCrash p e 
+  if enemyCrash p e
     then checkEnemyCrash (fst (onEnemyCrash p e)) es
     else checkEnemyCrash p es
 
@@ -89,7 +100,7 @@ updateEnemyList _ [] _ t
   | t `mod` enemyGenerateRate == 0 = do { e' <- generateEnemy; return [e']}
   | otherwise = return []
 updateEnemyList p (e:es) pb t
-  | t `mod` enemyGenerateRate == 0 = 
+  | t `mod` enemyGenerateRate == 0 =
       do e'  <- generateEnemy
          es' <- updateEnemyList p es pb t
          return (if isEnemyAlive e && inBoundary e
@@ -123,10 +134,10 @@ checkBulletHit (b:bs) e =
 updatePlayerBullet :: Game -> [PlayerBullet]
 updatePlayerBullet GameOver = error "Game over, cannot update enemy bullets."
 updatePlayerBullet Game{ playerBullets = pb, enemies = e } = updatePlayerBulletList pb e
-  
+
 updatePlayerBulletList :: [PlayerBullet] -> [EnemyPlane] -> [PlayerBullet]
 updatePlayerBulletList [] _ = []
-updatePlayerBulletList (p:ps) es = 
+updatePlayerBulletList (p:ps) es =
   if bulletHitList p es then updatePlayerBulletList ps es else p:(updatePlayerBulletList ps es)
 
 bulletHitList :: PlayerBullet -> [EnemyPlane] -> Bool
@@ -145,3 +156,68 @@ updateEnemyBulletList (e:es) p =
 updateTimer :: Game -> Time
 updateTimer GameOver = error "Game over, cannot update timer."
 updateTimer Game { timer = t } = t + 1
+
+
+-- data Movement
+--   = MoveUp
+--   | MoveDown
+--   | MoveLeft
+--   | MoveRight
+
+-- shouldUp :: Game -> Bool
+-- shouldUp g = shouldUp' [coord ^. _2 | coord <- [player g ^. coord]]
+
+-- shouldUp' :: [Int] -> Bool
+-- shouldUp' xs = (xs /= []) && maximum xs < gridHeight - 1
+
+-- shouldDown :: Game -> Bool
+-- shouldDown g = shouldDown' [coord ^. _2 | coord <- [player g ^. coord]]
+
+-- shouldDown' :: [Int] -> Bool
+-- shouldDown' xs = (xs /= []) && maximum xs > 0
+
+-- shouldLeft :: Game -> Bool
+-- shouldLeft g = shouldLeft' [coord ^. _1 | coord <- [player g ^. coord]]
+
+-- shouldLeft' :: [Int] -> Bool
+-- shouldLeft' xs = (xs /= []) && minimum xs > 0
+
+-- shouldRight :: Game -> Bool
+-- shouldRight g = shouldRight' [coord ^. _1 | coord <- [player g ^. coord]]
+
+-- shouldRight' :: [Int] -> Bool
+-- shouldRight' xs = (xs /= []) && minimum xs < gridWidth - 1
+
+-- afterMoveSignleStep :: Game -> Game
+-- afterMoveSignleStep g =
+--   fromMaybe g $ do
+--     guard (not $ isDead g)
+--     return g
+
+-- movePlayer :: Movement -> Game -> Game
+-- movePlayer dir g =
+--   case dir of
+--     MoveUp ->
+--       if shouldUp g
+--         then g & player %~ fmap (+ V2 0 1)
+--         else g
+--     MoveDown ->
+--       if shouldDown g
+--         then g & player %~ fmap (+ V2 0 (-1))
+--         else g
+--     MoveLeft ->
+--       if shouldLeft g
+--         then g & player %~ fmap (+ V2 (-1) 0)
+--         else g
+--     MoveRight ->
+--       if shouldRight g
+--         then g & player %~ fmap (+ V2 1 0)
+--         else g
+
+movePlayerSingleStep :: Direction -> Game -> Game
+movePlayerSingleStep dir game =
+  case game of
+    GameOver -> GameOver
+    Game { player = p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, paused = ps } ->
+      if paused game then game
+      else Game { player = movePlayer dir p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, paused = ps }

@@ -233,7 +233,7 @@ movePlayer dir p = if (outOfBoundary (onMove'' dir (p^.coord)))
   else p & coord %~ (onMove'' dir)
 
 outOfBoundary :: Coord -> Bool
-outOfBoundary coord = (coord ^. _2 > gridHeight) || (coord ^. _2 < 0) || (coord ^. _1 > gridWidth) || (coord ^. _1 < 0)
+outOfBoundary coord = (coord ^. _2 > gridHeight - 1) || (coord ^. _2 < 0) || (coord ^. _1 > gridWidth - 1) || (coord ^. _1 < 0)
 
 moveEnemy :: Time -> EnemyPlane -> EnemyPlane
 moveEnemy t enemy = moveEnemy' t (enemy^.moveMode) (enemy^.direction) enemy

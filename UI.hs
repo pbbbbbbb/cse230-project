@@ -45,24 +45,21 @@ import GHC.IO (unsafePerformIO)
 import qualified Graphics.Vty as V
 import Lens.Micro (mapped, (^.))
 import Linear.V2 (V2 (..))
-import Shaft
-  ( Game,
-    Mode,
-    Name,
-    Score,
-    Tick (..),
-    alive,
-    gridHeight,
-    gridWidth,
-    health,
-    initState,
-    mode,
-    paused,
-    player,
-    score,
-  )
+
+import Game
 
 import Player
+  (
+    gridHeight,
+    gridWidth,
+    coord,
+    playerHealth,
+    alive,
+    score,
+    coordBullet,
+    coordEnemy,
+    coordTurret
+  )
 
 data Cell
   = Empty
@@ -83,10 +80,10 @@ app =
     }
 
 drawUI :: Game -> [Widget Name]
-drawUI g =
-  if g ^. paused
-    then [C.center (padRight (Pad 2) (drawStats g <+> drawPauseScreen))]
-    else [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
+drawUI g = [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
+  -- if g ^. paused
+  --   then [C.center (padRight (Pad 2) (drawStats g <+> drawPauseScreen))]
+  --   else [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
 
 drawPauseScreen :: Widget Name
 drawPauseScreen =
@@ -109,16 +106,16 @@ drawStats g =
   hLimit
     20
     ( vBox
-        [ padTop (Pad 1) (drawMode (g ^. mode)),
-          padTop (Pad 1) (drawScore1 (g ^. score)),
-          padTop (Pad 1) (drawScore2 (g ^. score)),
-          padTop (Pad 1) (drawHealth1 (g ^. health)),
-          padTop (Pad 1) (drawHealth2 (g ^. health)),
-          drawGameOver (g ^. alive)
+        [
+          padTop (Pad 1) (drawScore1 (player g ^. score)),
+          -- padTop (Pad 1) (drawScore2 (g ^. score)),
+          padTop (Pad 1) (drawHealth1 (player g ^. playerHealth)),
+          -- padTop (Pad 1) (drawHealth2 (g ^. health)),
+          drawGameOver (player g ^. alive)
         ]
     )
 
-drawScore1 :: Score -> Widget Name
+drawScore1 :: Int -> Widget Name
 drawScore1 s =
   withBorderStyle BS.unicodeRounded $
     B.borderWithLabel (str " Player 1's Score") $
@@ -126,15 +123,15 @@ drawScore1 s =
         padAll 1 $
           str (show s)
 
-drawScore2 :: Score -> Widget Name
-drawScore2 s =
-  withBorderStyle BS.unicodeRounded $
-    B.borderWithLabel (str " Player 2's Score") $
-      C.hCenter $
-        padAll 1 $
-          str (show s)
+-- drawScore2 :: Score -> Widget Name
+-- drawScore2 s =
+--   withBorderStyle BS.unicodeRounded $
+--     B.borderWithLabel (str " Player 2's Score") $
+--       C.hCenter $
+--         padAll 1 $
+--           str (show s)
 
-drawHealth1 :: Score -> Widget Name
+drawHealth1 :: Int -> Widget Name
 drawHealth1 s =
   withBorderStyle BS.unicodeRounded $
     B.borderWithLabel (str " Player 1's Health ") $
@@ -142,21 +139,21 @@ drawHealth1 s =
         padAll 1 $
           str (show s)
 
-drawHealth2 :: Score -> Widget Name
-drawHealth2 s =
-  withBorderStyle BS.unicodeRounded $
-    B.borderWithLabel (str " Player 2's Health ") $
-      C.hCenter $
-        padAll 1 $
-          str (show s)
+-- drawHealth2 :: Score -> Widget Name
+-- drawHealth2 s =
+--   withBorderStyle BS.unicodeRounded $
+--     B.borderWithLabel (str " Player 2's Health ") $
+--       C.hCenter $
+--         padAll 1 $
+--           str (show s)
 
-drawMode :: Mode -> Widget Name
-drawMode s =
-  withBorderStyle BS.unicodeRounded $
-    B.borderWithLabel (str " Mode ") $
-      C.hCenter $
-        padAll 1 $
-          str (show s)
+-- drawMode :: Mode -> Widget Name
+-- drawMode s =
+--   withBorderStyle BS.unicodeRounded $
+--     B.borderWithLabel (str " Mode ") $
+--       C.hCenter $
+--         padAll 1 $
+--           str (show s)
 
 drawGameOver :: Bool -> Widget Name
 drawGameOver False = withAttr gameOverAttr $ C.hCenter $ str "Game Over"
@@ -169,7 +166,7 @@ gameInit = do
     forever $ do
       BChan.writeBChan channel Tick
       threadDelay 400000
-  state <- initState
+  let state = initGame
   let builder = V.mkVty V.defaultConfig
   initialVty <- builder
   customMain initialVty builder (Just channel) app state
@@ -185,9 +182,10 @@ drawGrid g =
     cellsInRow y = [drawCoord (V2 x y) | x <- [0 .. gridWidth - 1]]
     drawCoord = drawCell . cellAt
     cellAt c
-      | c `elem` (g ^. player) = Player
-      -- \| c `elem` (g ^. enemies) = Enemy
-      -- \| c `elem` (g ^. playerBullets) = PlayerBullet
+      | c == (player g ^. coord) = Player
+      | any (\b -> c == (b ^. coordTurret)) (enemies g) = PlayerBullet
+      | any (\b -> c == (b ^. coordBullet)) (playerBullets g) = PlayerBullet
+      | any (\b -> c == (b ^. coordEnemy)) (enemyBullets g) = EnemyBullet
       -- \| c `elem` (g ^. enemyBullets) = EnemyBullet
       | otherwise = Empty
 
