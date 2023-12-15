@@ -100,6 +100,9 @@ generatePlayer = Player {
 isPlayerAlive :: PlayerPlane -> Bool
 isPlayerAlive p = (p ^. playerHealth <= 0) || (not (p ^.alive))
 
+isPlayerAlive :: EnemyPlane -> Bool
+isPlayerAlive e = (e ^. enemyHealth <= 0) || (not (e ^. killed))
+
 generateEnemy :: IO EnemyPlane
 generateEnemy = do
   tp <- randomInt 0 3
@@ -150,7 +153,7 @@ createEnemy Fighter dir coord = do
 createEnemy Bomber dir coord = do
   id <- randomInt 1 2
   return Enemy {
-    _coords = [coord, (coord - (V2 1 0)), (coord + (V2 1 0)), (coord - (V2 0 1)), (coord + (V2 2 0)), (coord - (V2 2 0)), (coord + (V2 2 1)), (coord + (V2 2 (-1))), (coord + (V2 (-2) 1)), (coord + (V2 (-2) (-1)))],
+    _coords = [coord, (coord - (V2 1 0)), (coord + (V2 1 0)), (coord + (V2 2 0)), (coord - (V2 2 0)), (coord + (V2 2 1)), (coord + (V2 2 (-1))), (coord + (V2 (-2) 1)), (coord + (V2 (-2) (-1)))],
     _coordTurret = coord,
     _price = 400,
     _enemyHealth = 4,
