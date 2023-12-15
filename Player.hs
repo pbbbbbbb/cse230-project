@@ -93,7 +93,7 @@ generatePlayer = Player {
     _score = 0,
     _playerHealth = 10,
     _alive = True,
-    _playerFireRate = 1,
+    _playerFireRate = 2,
     _playerFire = Cannon
   }
 
@@ -170,7 +170,7 @@ createEnemy Starship dir coord = do
     _coords = (createStarShipCoord coord 1),
     _coordTurret = coord,
     _price = 1500,
-    _enemyHealth = 15,
+    _enemyHealth = 10,
     _killed = True,
     _enemyFireRate = 3,
     _fireMode = (firePool!!id1),
@@ -252,11 +252,13 @@ moveEnemyBullet :: EnemyBullet -> EnemyBullet
 moveEnemyBullet e = e & coordEnemy %~ (onMove'' (e^.enemyDirection))
 
 moveEnemy' :: Time -> MoveMode -> Direction -> EnemyPlane -> EnemyPlane
-moveEnemy' t Strike dir enemy = (enemy & coords %~ (onMove' dir)) & coordTurret %~ (onMove'' dir)
-moveEnemy' t Move dir enemy = if (t`mod` 2 == 0)
+moveEnemy' t Strike dir enemy = if (t`mod` 2 == 0)
   then (enemy & coords %~ (onMove' dir)) & coordTurret %~ (onMove'' dir)
   else enemy
-moveEnemy' t TurrentMove dir enemy = if (t`mod` 2 == 0)
+moveEnemy' t Move dir enemy = if (t`mod` 3 == 0)
+  then (enemy & coords %~ (onMove' dir)) & coordTurret %~ (onMove'' dir)
+  else enemy
+moveEnemy' t TurrentMove dir enemy = if (t`mod` 3 == 0)
   then turrentMove (enemy^.coordTurret) dir enemy
   else enemy
 
