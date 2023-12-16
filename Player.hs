@@ -37,7 +37,7 @@ data EnemyType = Fighter | Bomber | Starship | Turrent deriving (Show)
 gridWidth :: Int
 gridWidth = 50
 gridHeight :: Int
-gridHeight = 50
+gridHeight = 30
 firePool :: [FireMode]
 firePool = [None, SingleDown, SingleShotgun, SingleCorner, SingleCross, SingleFlower, LazerDown, LazerCorner, LazerCross]
 movePool :: [MoveMode]

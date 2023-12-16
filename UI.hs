@@ -52,11 +52,11 @@ import Player
     coordBullet,
     coordEnemy,
     coords,
+    generatePlayerCoords,
     gridHeight,
     gridWidth,
     playerHealth,
     score,
-    generatePlayerCoords
   )
 
 data Cell
@@ -77,11 +77,24 @@ app =
       appAttrMap = const theMap
     }
 
+gameInit :: IO Game
+gameInit = do
+  channel <- BChan.newBChan 10
+  forkIO $
+    forever $ do
+      BChan.writeBChan channel Tick
+      threadDelay 125000
+  let state = initGame
+  let builder = V.mkVty V.defaultConfig
+  initialVty <- builder
+  customMain initialVty builder (Just channel) app state
+
 drawUI :: Game -> [Widget Name]
-drawUI g = if paused g
-  then [C.center (padRight (Pad 2) (drawStats g <+> drawPauseScreen))]
-  else [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
--- drawUI g = [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
+drawUI g =
+  if paused g
+    then [C.center (padRight (Pad 2) (drawStats g <+> drawPauseScreen))]
+    else [C.center (padRight (Pad 2) (drawStats g <+> drawGrid g))]
+
 
 drawPauseScreen :: Widget Name
 drawPauseScreen =
@@ -104,11 +117,9 @@ drawStats g =
     20
     ( vBox
         [ padTop (Pad 1) (drawScore1 (player g ^. score)),
-          -- padTop (Pad 1) (drawScore2 (g ^. score)),
           padTop (Pad 1) (drawHealth1 (player g ^. playerHealth)),
           padTop (Pad 1) (drawMode (mode g)),
           padTop (Pad 1) (drawTimer (timer g)),
-          -- padTop (Pad 1) (drawHealth2 (g ^. health)),
           drawGameOver $ gameOver g
         ]
     )
@@ -129,14 +140,6 @@ drawScore1 s =
         padAll 1 $
           str (show s)
 
--- drawScore2 :: Score -> Widget Name
--- drawScore2 s =
---   withBorderStyle BS.unicodeRounded $
---     B.borderWithLabel (str " Player 2's Score") $
---       C.hCenter $
---         padAll 1 $
---           str (show s)
-
 drawHealth1 :: Int -> Widget Name
 drawHealth1 s =
   withBorderStyle BS.unicodeRounded $
@@ -144,14 +147,6 @@ drawHealth1 s =
       C.hCenter $
         padAll 1 $
           str (show s)
-
--- drawHealth2 :: Score -> Widget Name
--- drawHealth2 s =
---   withBorderStyle BS.unicodeRounded $
---     B.borderWithLabel (str " Player 2's Health ") $
---       C.hCenter $
---         padAll 1 $
---           str (show s)
 
 drawMode :: Mode -> Widget Name
 drawMode s =
@@ -165,18 +160,6 @@ drawGameOver :: Bool -> Widget Name
 drawGameOver True = withAttr gameOverAttr $ C.hCenter $ str "Game Over"
 drawGameOver False = emptyWidget
 
-gameInit :: IO Game
-gameInit = do
-  channel <- BChan.newBChan 10
-  forkIO $
-    forever $ do
-      BChan.writeBChan channel Tick
-      threadDelay 120000
-  let state = initGame
-  let builder = V.mkVty V.defaultConfig
-  initialVty <- builder
-  customMain initialVty builder (Just channel) app state
-
 drawGrid :: Game -> Widget Name
 drawGrid g =
   withBorderStyle BS.unicodeRounded $
@@ -187,7 +170,7 @@ drawGrid g =
     cellsInRow y = [drawCoord (V2 x y) | x <- [0 .. gridWidth - 1]]
     drawCoord = drawCell . cellAt
     cellAt c
-      | c `elem` (generatePlayerCoords $player g ^. coord) = Player
+      | c `elem` (generatePlayerCoords $ player g ^. coord) = Player
       | any (\b -> c `elem` (b ^. coords)) (enemies g) = Enemy
       | any (\b -> c == (b ^. coordEnemy)) (enemyBullets g) = EnemyBullet
       | any (\b -> c == (b ^. coordBullet)) (playerBullets g) = PlayerBullet
