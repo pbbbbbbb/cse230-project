@@ -10,7 +10,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DataKinds #-}
 module Player where
-import Data.Monoid
+import Data.Monoid ()
 import System.Random (Random (..), newStdGen, randomRs)
 import Control.Lens (makeLenses, (%~), (&), (.~), (^.), _1, _2)
 import Linear.V2 (V2 (..))

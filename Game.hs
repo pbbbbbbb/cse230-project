@@ -1,7 +1,6 @@
 {-# LANGUAGE StrictData #-}
 module Game where
 
-import Bullet
 import Player
 import Control.Monad.State
 import GHC.IO.Exception (IOErrorType(TimeExpired))
@@ -49,6 +48,7 @@ initGame = Game {
   gameOver = False
 }
 
+-- Tick on each frame
 tick :: Game -> IO Game
 tick g
   | isOver g = return (setGameOver g)
@@ -65,6 +65,7 @@ tick g
                     gameOver = False
                   }
 
+-- Modify game state
 addScore :: PlayerPlane -> Int -> PlayerPlane
 addScore p sc = p & score %~ (+ sc)
 
@@ -81,6 +82,7 @@ getEnemyGenerateRate Medium = 30
 getEnemyGenerateRate Hard = 20
 getEnemyGenerateRate Insane = 15
 
+-- Game status
 isPaused :: Game -> Bool
 isPaused g = paused g || gameOver g
 
@@ -111,6 +113,7 @@ setPause g = Game {
     gameOver = gameOver g
   }
 
+-- Player
 updatePlayer :: Game -> PlayerPlane
 updatePlayer Game{ player = p, enemies = e, enemyBullets = eb } = checkBulletCrash (checkEnemyCrash p e) eb
 
@@ -127,7 +130,16 @@ checkBulletCrash p (b:bs) =
   if bulletCrash p b
     then checkBulletCrash (fst (onBulletCrash p b)) bs
     else checkBulletCrash p bs
+    
+movePlayerSingleStep :: Direction -> Game -> Game
+movePlayerSingleStep dir game =
+  case game of
+    Game { player = p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, mode = md, paused = ps } ->
+      if paused game then game
+      else Game { player = movePlayer dir p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, mode = md, paused = ps, gameOver = False}
 
+
+-- Enemies
 updateEnemies :: Game -> IO ([EnemyPlane], Int)
 updateEnemies Game{ player = p, enemies = e, playerBullets = pb, timer = t, mode = md}
   = updateEnemyList (getEnemyGenerateRate md) p e pb t
@@ -136,17 +148,6 @@ updateEnemyList :: Int -> PlayerPlane -> [EnemyPlane] -> [PlayerBullet] -> Time 
 updateEnemyList egr _ [] _ t
   | t `mod` egr == 0 = do { e' <- generateEnemy; return ([e'], 0)}
   | otherwise = return ([], 0)
--- updateEnemyList egr p (e:es) pb t
---   | t `mod` egr == 0 =
---       do e'  <- generateEnemy
---          (es', sc) <- updateEnemyList egr p es pb t
---          return (if isEnemyAlive e && inBoundary e
---                     then (e' : (updateEnemy p e pb t : es'), sc)
---                     else (e' : es', sc + (if isEnemyAlive e then 0 else (_price e))))
---   | otherwise = do (es', sc) <- updateEnemyList egr p es pb t
---                    return (if isEnemyAlive e && inBoundary e
---                               then (updateEnemy p e pb t : es', sc)
---                               else (es', sc + (if isEnemyAlive e then 0 else (_price e))))
 updateEnemyList egr p (e:es) pb t = do
                                       (es', sc) <- updateEnemyList egr p es pb t
                                       return (if isEnemyAlive e && inBoundary e
@@ -173,6 +174,7 @@ checkBulletHit (b:bs) e =
     then checkBulletHit bs (snd (onBulletHit b e))
     else checkBulletHit bs e
 
+-- Player bullet
 updatePlayerBullet :: Game -> [PlayerBullet]
 updatePlayerBullet g = map movePlayerBullet (updatePlayerBullet' g)
 
@@ -189,6 +191,7 @@ bulletHitList :: PlayerBullet -> [EnemyPlane] -> Bool
 bulletHitList p [] = False
 bulletHitList p (e:es) = (bulletHit p e) || (bulletHitList p es)
 
+-- Enemy bullet
 updateEnemyBullet :: Game -> [EnemyBullet]
 updateEnemyBullet g = map moveEnemyBullet (updateEnemyBullet' g)
 
@@ -205,12 +208,6 @@ enemiesShoot :: [EnemyPlane] -> Time -> [EnemyBullet]
 enemiesShoot [] t = []
 enemiesShoot (e:es) t = (enemyBulletShoot e t) ++ (enemiesShoot es t)
 
+-- Timer
 updateTimer :: Game -> Time
 updateTimer Game { timer = t } = t + 1
-
-movePlayerSingleStep :: Direction -> Game -> Game
-movePlayerSingleStep dir game =
-  case game of
-    Game { player = p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, mode = md, paused = ps } ->
-      if paused game then game
-      else Game { player = movePlayer dir p, enemies = es, playerBullets = pbs, enemyBullets = ebs, timer = t, mode = md, paused = ps, gameOver = False}
