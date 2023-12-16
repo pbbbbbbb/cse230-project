@@ -3,6 +3,7 @@ module UnitTest where
 import Test.QuickCheck
 import Player
 import Linear.V2 (V2 (..))
+import Control.Lens (makeLenses, (%~), (&), (.~), (^.), _1, _2)
 
 testCreateEnemy :: EnemyPlane -> Bool
 testCreateEnemy e = checkCreateEnemy (e ^. coordTurret) (e^.direction)
