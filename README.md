@@ -53,7 +53,9 @@ The major tasks in implementing the game includes:
     * Update enemy: check crash, move, generate bullet
     * Update bullet: move
     * Return `IO Game` to UI
+## Unit Test
 
+* We implemented unit test as a module named "UnitTest" and tested manually by changing the content of main in "Main.hs".
 ## Task Allocation
 
 * Zhangchi Lu: Property and behavior of Player, Enemy and Bullets
