@@ -5,6 +5,21 @@ import Player
 import Game
 import Linear.V2 (V2 (..))
 import Control.Lens (makeLenses, (%~), (&), (.~), (^.), _1, _2)
+-- main :: IO ()
+-- main = do
+--    res <- testEnemyList 500
+--    if res
+--        then putStrLn "True"
+--        else putStrLn "False"
+
+testEnemyList :: Int -> IO Bool
+testEnemyList 0 = do
+  return True
+testEnemyList n = do
+  enemy <- generateEnemy
+  if not (testCreateEnemy enemy)
+    then return False
+    else testEnemyList (n - 1)
 
 testCreateEnemy :: EnemyPlane -> Bool
 testCreateEnemy e = checkCreateEnemy (e ^. coordTurret) (e^.direction)
