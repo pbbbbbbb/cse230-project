@@ -43,7 +43,7 @@ ghc-options:
 - -Wredundant-constraints
 
 library:
-  source-dirs: lib
+  source-dirs: src
 
 executables:
   ns-shaft:
