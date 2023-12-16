@@ -3,7 +3,7 @@
 The course project for CSE230 Principles of Programming Language
 
 ## Application
-We plan to design and implement a networked two-player aircraft shooting game with Haskell.
+We plan to design and implement a two-player aircraft shooting game with Haskell.
 
 ## Goals
 The major tasks in implementing the game includes:
@@ -28,64 +28,35 @@ The major tasks in implementing the game includes:
   * The players runs in the client side with the user interfaces and part of the gaming logic code.
   * The server maintains data structure that stores important information and is responsible for synchronising shared data among users.
 
-## Timeline
-11.16 - 11.22	
-* Get familiar with relevant libraries. 
-* Finish gaming rules and logic design.
-  
-11.23 - 12.06
-(12.01 checkpoint 2)
-* Implement the user interface and gaming logic for a single user. 
-* Design the corresponding server structure and server-client communication.
-  
-12.06 - 12.12
-* Test and debug the game, including gaming logic and network communication.
-  
-12.13 - 12.15
-* Finish the whole project
-* Prepare for the demonstration
-
 ## Project Architecture
 
-* UI - implemented with bricks
-  * Tick: call `step` in game event
-* Game objects
-  * Player - move, shoot bullet, check health…
-    * Data: score, coordination, health, 
-    * Related functions: getScore, setScore, isAlive, move, etc.
-  * Enemy - move, shoot bullet
-    * Data: score, coordination, health, fire rate
-    * Related functions: getScore, setScore, isAlive, move, shootBullet etc.
-  * Bullet (from player/enemy)
-* Game event
-  * A global timer for controlling objects' speed
-  * On each `step`
-    * Increment timer
-    * Check if the player and enemy crash
-    * Check if the player is shot
-    * Generate new enemy
-    * Move enemy, shoot bullet
-    * Update UI
+* `UI.sh` - mplemented with bricks
   * Keyboard
     * ‘W’, ‘A’, ‘S’, ‘D’ - move the player
     * ‘P’ - pause
     * ‘esc’ - exit
-* Network
-  * A server that stores players’ data.
-  * Client side communication functions.
+* `Player.sh` - game objects and relevant operations
+  * Player - move, shoot bullet, check health…
+    * Data: score, coordination, health
+    * Related functions: getScore, setScore, isAlive, move, etc.
+  * Enemy - move, shoot bullet
+    * Data: score, coordination, health, fire rate
+    * Related functions: getScore, setScore, isAlive, move, shootBullet etc.
+  * Player bullet
+  * Enemy bullet
+* `Game.sh` - game frame
+  * Data: player, enemy, bullets
+  * Game status: game over,  pause, timer
+  * `Tick` function
+    * Increment timer
+    * Update player: check crash, move, generate bullet
+    * Update enemy: check crash, move, generate bullet
+    * Update bullet: move
+    * Return `IO Game` to UI
 
 ## Task Allocation
 
 * Zhangchi Lu: Property and behavior of Player, Enemy and Bullets
 * Yangkun Wang: Main UI
 * Bei Pei: Game events
-
-## Current Progress
-
-* We got familiar with relevant packages
-* We analyzed our goal and came up with detailed architecture design of the project
-* We started implement each components
-However, maintaining player and enemy states have been tricky, so we didn’t managed to fully implement the UI and gaming logic for a single player as expected. We might not be able to integrate networking and multi-player mode before the submission. 
-* Adjustment: if the progress is still not satisfying up to 6 Dec, we plan to give up the networking functions and try our best to make sure the current single player game can function well.
-
 
