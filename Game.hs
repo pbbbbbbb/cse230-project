@@ -1,7 +1,6 @@
 {-# LANGUAGE StrictData #-}
 module Game where
 
-import Bullet
 import Player
 import Control.Monad.State
 import GHC.IO.Exception (IOErrorType(TimeExpired))
