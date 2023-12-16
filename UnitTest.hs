@@ -12,6 +12,7 @@ import Control.Lens (makeLenses, (%~), (&), (.~), (^.), _1, _2)
 --        then putStrLn "True"
 --        else putStrLn "False"
 
+--Check if enemy location and its moving direction matches
 testEnemyList :: Int -> IO Bool
 testEnemyList 0 = do
   return True
