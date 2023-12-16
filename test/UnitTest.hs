@@ -5,8 +5,9 @@ import Player
 import Game
 import Linear.V2 (V2 (..))
 import Control.Lens (makeLenses, (%~), (&), (.~), (^.), _1, _2)
---main :: IO ()
---main = do
+
+-- main :: IO ()
+-- main = do
 --    res <- testEnemyList 500
 --    if res
 --        then putStrLn "True"

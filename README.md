@@ -22,7 +22,7 @@ The major tasks in implementing the game includes:
   * The enemy's aircrafts can attack players in the following way:
     * Directly smash into the player.
     * Shoot out bullets around.
-    * Shoot out a line of laser which can be regarded as a whole line of bullets. 
+    * Shoot out a line of laser which can be regarded as a whole line of bullets.
 * Implement inter-player communication with haskell [`Network`](https://wiki.haskell.org/Applications_and_libraries/Network) library
   * We achieve the two-player mode in a client-server manner, which allows potentially increase the number of players involved.
   * The players runs in the client side with the user interfaces and part of the gaming logic code.
@@ -30,11 +30,11 @@ The major tasks in implementing the game includes:
 
 ## Project Architecture
 
-* `UI.sh` - mplemented with bricks
+* `UI.sh` - implemented with bricks
   * Keyboard
     * ‘W’, ‘A’, ‘S’, ‘D’ - move the player
     * ‘P’ - pause
-    * ‘esc’ - exit
+    * ‘Esc’ - exit
 * `Player.sh` - game objects and relevant operations
   * Player - move, shoot bullet, check health…
     * Data: score, coordination, health
@@ -53,9 +53,41 @@ The major tasks in implementing the game includes:
     * Update enemy: check crash, move, generate bullet
     * Update bullet: move
     * Return `IO Game` to UI
+
+## How to play
+
+### Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+* [Stack](hhttps://docs.haskellstack.org/en/stable/)
+
+### Build
+
+To build the game, run the following command:
+
+```bash
+$ stack build
+```
+
+### Run
+
+To start the game, run:
+
+```bash
+$ stack run
+```
+
 ## Unit Test
 
-* We implemented unit test as a module named "UnitTest" and tested manually by changing the content of main in "Main.hs".
+Our game includes a robust set of unit tests, housed in the "UnitTest" module. These tests help ensure the game's reliability and performance.
+
+Run the following command to run the unit test.
+
+```bash
+$ stack test
+```
+
 ## Task Allocation
 
 * Zhangchi Lu: Property and behavior of Player, Enemy and Bullets

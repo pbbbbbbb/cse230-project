@@ -1,7 +1,7 @@
 module Main (main) where
 
 import UI (gameInit)
-import UnitTest
+-- import UnitTest
 
 main :: IO ()
 main = do

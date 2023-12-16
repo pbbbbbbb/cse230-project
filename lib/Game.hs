@@ -77,9 +77,9 @@ changeMode g
   | otherwise = Easy
 
 getEnemyGenerateRate :: Mode -> Int
-getEnemyGenerateRate Easy = 40
-getEnemyGenerateRate Medium = 30
-getEnemyGenerateRate Hard = 20
+getEnemyGenerateRate Easy = 45
+getEnemyGenerateRate Medium = 35
+getEnemyGenerateRate Hard = 25
 getEnemyGenerateRate Insane = 15
 
 -- Game status
@@ -130,7 +130,7 @@ checkBulletCrash p (b:bs) =
   if bulletCrash p b
     then checkBulletCrash (fst (onBulletCrash p b)) bs
     else checkBulletCrash p bs
-    
+
 movePlayerSingleStep :: Direction -> Game -> Game
 movePlayerSingleStep dir game =
   case game of
