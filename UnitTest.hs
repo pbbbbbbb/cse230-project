@@ -5,8 +5,8 @@ import Player
 import Game
 import Linear.V2 (V2 (..))
 import Control.Lens (makeLenses, (%~), (&), (.~), (^.), _1, _2)
--- main :: IO ()
--- main = do
+--main :: IO ()
+--main = do
 --    res <- testEnemyList 500
 --    if res
 --        then putStrLn "True"
@@ -26,9 +26,9 @@ testCreateEnemy e = checkCreateEnemy (e ^. coordTurret) (e^.direction)
 checkCreateEnemy :: Coord -> Direction -> Bool
 checkCreateEnemy coord dir = case dir of
     Up -> ((coord ^. _2) == 0) && ((coord ^. _1) >=  0) && ((coord ^. _1) <=  gridWidth)
-    Dn -> ((coord ^. _2) ==  gridHeight)  && ((coord ^. _1) >=  0) && ((coord ^. _1) <=  gridWidth)
-    Lft -> ((coord ^. _1) ==  0) && ((coord ^. _2) >= 0) && ((coord ^. _2) <=  gridHeight)
-    Rt -> ((coord ^. _1) ==  gridWidth) && ((coord ^. _2) >= 0) && ((coord ^. _2) <=  gridHeight)
+    Dn -> ((coord ^. _2) ==  gridHeight - 1)  && ((coord ^. _1) >=  0) && ((coord ^. _1) <=  gridWidth)
+    Lft -> ((coord ^. _1) ==  gridWidth - 1) && ((coord ^. _2) >= 0) && ((coord ^. _2) <=  gridHeight)
+    Rt -> ((coord ^. _1) ==  0) && ((coord ^. _2) >= 0) && ((coord ^. _2) <=  gridHeight)
     otherwise -> False
 
 -- Check that all enemies in the list is alive and dead ones are removed
